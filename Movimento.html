@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Porco's Adventure</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background-color: #000;
+      background-color: #59c4f2; /* fundo azul claro do céu */
     }
     canvas {
       display: block;
@@ -17,33 +17,98 @@
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
-
   <script>
-    let showBox = false;
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-    const config = {
-      pigSpeed: 4,
-      pigWidth: 150,
-      pigHeight: 150
+    const assets = {
+      shopping: new Image(),
+      casino: new Image(),
+      casa: new Image(),
+      pig: new Image()
     };
 
+    assets.shopping.src = "./Imagens/Mapas/mapa-shopping.png";
+    assets.casino.src = "./Imagens/Mapas/mapa-cassino-dia.jpeg";
+    assets.casa.src = "./Imagens/Mapas/mapa-casa.png";
+    assets.pig.src = "./Imagens/Personagem/personagem-lateral-direita.png";
+
     const pig = {
-      x: 80,
+      x: 0,
       y: 0,
-      width: config.pigWidth,
-      height: config.pigHeight,
-      speed: config.pigSpeed,
+      width: 225,
+      height: 225,
+      speed: 4,
       velocityY: 0,
       isJumping: false,
-      direction: 'right'
+      direction: "right"
     };
 
     const gravity = 0.5;
     const jumpForce = -12;
-    let groundY = 0; // Será atualizado no resize
+    let groundY = 0;
     let groundHeight = 0;
+
+    let currentMap = "casa";
+    let showBox = false;
+    let canSwitchMap = true;
+
+    const maps = {
+      casa: {
+        name: "casa",
+        image: assets.casa,
+        transitions: {
+          right: "shopping"
+        },
+        offsetY: 30
+      },
+      shopping: {
+        name: "shopping",
+        image: assets.shopping,
+        transitions: {
+          left: "casa",
+          right: "casino"
+        },
+        offsetY: 100
+      },
+      casino: {
+        name: "casino",
+        image: assets.casino,
+        transitions: {
+          left: "shopping"
+        },
+        offsetY: 0
+      }
+    };
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      switch (currentMap) {
+        case "casino":
+          groundHeight = canvas.height - 90;
+          break;
+        case "shopping":
+          groundHeight = canvas.height - 100;
+          break;
+        default:
+          groundHeight = canvas.height / 1.33;
+      }
+
+      groundY = groundHeight - pig.height;
+    }
+
+    function switchMap(direction) {
+      const nextMap = maps[currentMap].transitions[direction];
+      if (nextMap && canSwitchMap) {
+        currentMap = nextMap;
+        canSwitchMap = false;
+        resizeCanvas();
+        pig.x = direction === "right" ? 0 : canvas.width - pig.width;
+        setTimeout(() => canSwitchMap = true, 300);
+      }
+    }
 
     const keys = {
       ArrowUp: false,
@@ -52,82 +117,84 @@
       ArrowRight: false
     };
 
-    const assets = {
-      background: new Image(),
-      pig: new Image()
-    };
-
-    assets.background.src = './Imagens/Mapas/mapa-shopping.png';
-    assets.pig.src = './Imagens/Personagem/personagem-lateral-direita.png';
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      groundHeight = canvas.height / 1.33;
-      groundY = groundHeight - pig.height;
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-
-    document.addEventListener('keydown', e => {
+    document.addEventListener("keydown", e => {
       if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+      if (e.key === "e" || e.key === "E") {
+        if (pig.x >= 817 && pig.x <= 1093) showBox = !showBox;
+      }
     });
 
-    document.addEventListener('keyup', e => {
+    document.addEventListener("keyup", e => {
       if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
     });
 
     function update() {
-  let moveX = 0;
+      let moveX = 0;
 
-  if (keys.ArrowLeft) {
-    moveX -= pig.speed;
-    pig.direction = 'left';
-  }
-  if (keys.ArrowRight) {
-    moveX += pig.speed;
-    pig.direction = 'right';
-  }
+      if (keys.ArrowLeft) {
+        moveX -= pig.speed;
+        pig.direction = "left";
+      }
+      if (keys.ArrowRight) {
+        moveX += pig.speed;
+        pig.direction = "right";
+      }
+      if (keys.ArrowUp && !pig.isJumping) {
+        pig.velocityY = jumpForce;
+        pig.isJumping = true;
+      }
 
-  if (keys.ArrowUp && !pig.isJumping) {
-    pig.velocityY = jumpForce;
-    pig.isJumping = true;
-  }
+      pig.velocityY += gravity;
+      pig.y += pig.velocityY;
 
-  pig.velocityY += gravity;
-  pig.y += pig.velocityY;
+      if (pig.y >= groundY) {
+        pig.y = groundY;
+        pig.velocityY = 0;
+        pig.isJumping = false;
+      }
 
-  if (pig.y >= groundY) {
-    pig.y = groundY;
-    pig.velocityY = 0;
-    pig.isJumping = false;
-  }
+      pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
 
-  pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
-}
-
-document.addEventListener('keydown', e => {
-  if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
-
-  // Se apertar E e o porco estiver entre 817 e 1093 no eixo X
-  if (e.key === 'e' || e.key === 'E') {
-    if (pig.x >= 817 && pig.x <= 1093) {
-      showBox = !showBox; // alterna a caixa
+      if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
+      if (pig.x <= 10) switchMap("left");
     }
-  }
-});
-
-
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Cenário de fundo
-      ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
+      const map = maps[currentMap];
+      const offsetY = map.offsetY || 0;
+      const img = map.image;
 
-      // Personagem com espelhamento para virar
+      const targetHeight = canvas.height;
+      const targetWidth = canvas.width;
+
+      // Corrigir fundo preto espelhando o céu
+      if (currentMap === "shopping" || currentMap === "casa") {
+        const skyCropHeight = 80; // altura maior da faixa do céu a ser espelhada
+        const scaleX = canvas.width / img.width;
+        const scaledSkyHeight = skyCropHeight * scaleX;
+
+        // Céu de fundo sólido
+        ctx.fillStyle = "#59c4f2";
+        ctx.fillRect(0, 0, canvas.width, scaledSkyHeight);
+
+        ctx.save();
+        ctx.scale(1, -1);
+        ctx.drawImage(
+          img,
+          0, 0, img.width, skyCropHeight,
+          0, -scaledSkyHeight, canvas.width, scaledSkyHeight
+        );
+        ctx.restore();
+      }
+
+      // Desenhar mapa
+      ctx.drawImage(img, 0, offsetY, targetWidth, targetHeight);
+
+      // Desenhar personagem
       ctx.save();
-      if (pig.direction === 'left') {
+      if (pig.direction === "left") {
         ctx.translate(pig.x + pig.width, pig.y);
         ctx.scale(-1, 1);
         ctx.drawImage(assets.pig, 0, 0, pig.width, pig.height);
@@ -136,37 +203,43 @@ document.addEventListener('keydown', e => {
       }
       ctx.restore();
 
-      const debug = true;
-      if (debug) {
-      ctx.fillStyle = 'white';
-      ctx.font = '16px monospace';
-      ctx.fillText(`x: ${Math.round(pig.x)}, y: ${Math.round(pig.y)}`, 20, 30);
-    }
+      // Caixa de diálogo
+      if (showBox) {
+        const boxWidth = 700;
+        const boxHeight = 200;
+        const centerX = canvas.width / 2 - boxWidth / 2;
+        const centerY = canvas.height - boxHeight - 50;
 
-    if (showBox) {
-  const boxWidth = 700;
-  const boxHeight = 200;
-  const centerX = canvas.width / 2 - boxWidth / 2;
-  const centerY = canvas.height - boxHeight - 50;
+        ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+        ctx.fillRect(centerX, centerY, boxWidth, boxHeight);
 
-  // Caixa de fundo
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-  ctx.fillRect(centerX, centerY, boxWidth, boxHeight);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(centerX, centerY, boxWidth, boxHeight);
 
-  // Borda da caixa
-  ctx.strokeStyle = 'white';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(centerX, centerY, boxWidth, boxHeight);
+        ctx.fillStyle = "white";
+        ctx.font = "20px sans-serif";
+        ctx.fillText("Pressione 'E' para continuar...", centerX + 20, centerY + 50);
+        ctx.font = "18px sans-serif";
+        ctx.fillText("Olá, viajante! Bem-vindo ao mundo dos porcos aventureiros.", centerX + 20, centerY + 90);
+      }
 
-  // Texto de interação
-  ctx.fillStyle = 'white';
-  ctx.font = '20px sans-serif';
-  ctx.fillText("Pressione 'E' para continuar...", centerX + 20, centerY + 50);
+      const layoutWidth = 250;
+      const layoutHeight = 80;
+      const padding = 10;
 
-  // Texto de exemplo de interação
-  ctx.font = '18px sans-serif';
-  ctx.fillText("Olá, viajante! Bem-vindo ao mundo dos porcos aventureiros.", centerX + 20, centerY + 90);
-}
+      ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+      ctx.fillRect(padding, padding, layoutWidth, layoutHeight);
+
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(padding, padding, layoutWidth, layoutHeight);
+
+      ctx.fillStyle = "white";
+      ctx.font = "16px sans-serif";
+      ctx.fillText(`Mapa: ${currentMap}`, padding + 10, padding + 25);
+      ctx.fillText(`X: ${Math.round(pig.x)}`, padding + 10, padding + 45);
+      ctx.fillText(`Y: ${Math.round(pig.y)}`, padding + 10, padding + 65);
     }
 
     function gameLoop() {
@@ -178,14 +251,19 @@ document.addEventListener('keydown', e => {
     let loadedAssets = 0;
     function checkLoaded() {
       loadedAssets++;
-      if (loadedAssets === 2) {
+      if (loadedAssets === 4) {
         resizeCanvas();
+        pig.x = 50;
+        pig.y = groundY;
         gameLoop();
       }
     }
 
-    assets.background.onload = checkLoaded;
-    assets.pig.onload = checkLoaded;
+    for (const key in assets) {
+      assets[key].onload = checkLoaded;
+    }
+
+    window.addEventListener("resize", resizeCanvas);
   </script>
 </body>
 </html>
