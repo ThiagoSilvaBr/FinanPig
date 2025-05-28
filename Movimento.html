@@ -119,8 +119,18 @@
 
     document.addEventListener("keydown", e => {
       if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+
       if (e.key === "e" || e.key === "E") {
-        if (pig.x >= 817 && pig.x <= 1093) showBox = !showBox;
+        if (currentMap === "shopping" && pig.x >= 817 && pig.x <= 1093) {
+          showBox = !showBox;
+          dialogType = "shopping";
+        }
+
+        if (currentMap === "casa" && nearLemonade) {
+          showBox = true;
+          interactedWithLemonade = true;
+          dialogType = "lemonade";
+        }
       }
     });
 
@@ -157,7 +167,20 @@
 
       if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
       if (pig.x <= 10) switchMap("left");
+
+      if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
+        nearLemonade = true;
+      } else {
+        nearLemonade = false;
+        interactedWithLemonade = false; // reseta a interação se sair da área
+      }
+
+
     }
+
+    let dialogType = null;
+    let nearLemonade = false;
+    let interactedWithLemonade = false;
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -204,7 +227,7 @@
       ctx.restore();
 
       // Caixa de diálogo
-      if (showBox) {
+      if (showBox || nearLemonade) {
         const boxWidth = 700;
         const boxHeight = 200;
         const centerX = canvas.width / 2 - boxWidth / 2;
@@ -220,8 +243,16 @@
         ctx.fillStyle = "white";
         ctx.font = "20px sans-serif";
         ctx.fillText("Pressione 'E' para continuar...", centerX + 20, centerY + 50);
+
         ctx.font = "18px sans-serif";
-        ctx.fillText("Olá, viajante! Bem-vindo ao mundo dos porcos aventureiros.", centerX + 20, centerY + 90);
+        if (dialogType === "shopping") {
+          ctx.fillText("Olá, viajante! Bem-vindo ao mundo dos porcos aventureiros.", centerX + 20, centerY + 90);
+        } else if (dialogType === "lemonade") {
+          ctx.fillText("Olá! Quer uma limonada geladinha por 1 moeda?", centerX + 20, centerY + 90);
+        } else {
+          ctx.fillText("Interação genérica.", centerX + 20, centerY + 90);
+        }
+
       }
 
       const layoutWidth = 250;
