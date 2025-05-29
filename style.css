@@ -1,0 +1,22 @@
+body{
+    margin: 0;
+    overflow: hidden;
+    background-color: #59c4f2;
+    }
+
+canvas{
+    display: block;
+}
+
+.navbar{
+    background-color: #ce8056;
+}
+
+.navbarText{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    color: #fff;
+    font-size: 25px;
+}
