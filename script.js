@@ -1,3 +1,4 @@
+const sidewalkY = 590;
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -95,39 +96,28 @@ function update() {
     let moveX = 0;
 
     if (keys.ArrowLeft) {
-    moveX -= pig.speed;
-    pig.direction = "left";
+        moveX -= pig.speed;
+        pig.direction = "left";
     }
     if (keys.ArrowRight) {
-    moveX += pig.speed;
-    pig.direction = "right";
-    }
-    if (keys.ArrowUp && !pig.isJumping) {
-    pig.velocityY = jumpForce;
-    pig.isJumping = true;
-    }
-
-    pig.velocityY += gravity;
-    pig.y += pig.velocityY;
-
-    if (pig.y >= groundY) {
-    pig.y = groundY;
-    pig.velocityY = 0;
-    pig.isJumping = false;
+        moveX += pig.speed;
+        pig.direction = "right";
     }
 
     pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
+    pig.y = sidewalkY; // Força o Y fixo da calçada
 
     if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
     if (pig.x <= 10) switchMap("left");
 
     if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
-    nearLemonade = true;
+        nearLemonade = true;
     } else {
-    nearLemonade = false;
-    interactedWithLemonade = false;
+        nearLemonade = false;
+        interactedWithLemonade = false;
     }
 }
+
 
 let dialogType = null;
 let nearLemonade = false;
