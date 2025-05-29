@@ -1,3 +1,10 @@
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("startButton").addEventListener("click", function(){
+        document.getElementById("startScreen").style.display = "none";
+    });
+});
+
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -235,7 +242,8 @@ function checkAllLoaded() {
     assetsLoaded++;
     if (assetsLoaded === 2) {
     resizeCanvas();
-    pig.x = 50;
+    // Pig spawna na frente de casa
+    pig.x = (canvas.width - pig.width) / 2;
     pig.y = sidewalkY;
     gameLoop();
     }

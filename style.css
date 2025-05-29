@@ -1,3 +1,34 @@
+#startScreen{
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-image: url("./Imagens/Mapas/fundo-tela-inicial.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* sobrepor a tela do jogo */
+}
+
+#startScreenLogo{
+    width: 40vw;
+    max-width: 800px;
+    height: auto;
+}
+
+#startButton{
+    font-weight: bold;
+    font-size: 24px;
+    border: none;
+}
+
+#startButton:hover{
+    transform: scale(1.15);
+}
+
 body{
     margin: 0;
     overflow: hidden;
