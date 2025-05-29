@@ -1,4 +1,3 @@
-const sidewalkY = 590;
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -16,8 +15,8 @@ function loadMap(mapName) {
 const pig = {
     x: 0,
     y: 0,
-    width: 225,
-    height: 225,
+    width: 200,
+    height: 200,
     speed: 4,
     velocityY: 0,
     isJumping: false,
@@ -27,6 +26,7 @@ const pig = {
 const gravity = 0.5;
 const jumpForce = -12;
 let groundY = 0;
+let sidewalkY = 0;
 
 let currentMap = "casa";
 let showBox = false;
@@ -42,7 +42,9 @@ function resizeCanvas() {
     const navbarHeight = document.getElementById("mainNavbar").offsetHeight;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - navbarHeight;
-    groundY = canvas.height - pig.height - 30;
+
+    // Ajusta dinamicamente a posição vertical da calçada a partir da altura da tela
+    sidewalkY = canvas.height - pig.height - (canvas.height * 0.18);
 }
 
 function switchMap(direction) {
@@ -105,7 +107,23 @@ function update() {
     }
 
     pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
-    pig.y = sidewalkY; // Força o Y fixo da calçada
+
+    // Pula
+    if(keys.ArrowUp && !pig.isJumping){
+        pig.velocityY = jumpForce;
+        pig.isJumping = true;
+    }
+
+    // Física do pulo
+    pig.velocityY += gravity;
+    pig.y += pig.velocityY;
+
+    // Para na calçada ao pular
+    if(pig.y >= sidewalkY){
+        pig.y = sidewalkY;
+        pig.velocityY = 0;
+        pig.isJumping = false;
+    }
 
     if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
     if (pig.x <= 10) switchMap("left");
@@ -217,7 +235,7 @@ function checkAllLoaded() {
     if (assetsLoaded === 2) {
     resizeCanvas();
     pig.x = 50;
-    pig.y = groundY;
+    pig.y = sidewalkY;
     gameLoop();
     }
 }
