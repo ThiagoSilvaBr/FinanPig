@@ -128,6 +128,7 @@ function update() {
     if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
     if (pig.x <= 10) switchMap("left");
 
+    // Interação com a barraca de limonada
     if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
         nearLemonade = true;
     } else {
