@@ -84,18 +84,22 @@ document.addEventListener("keydown", e => {
     if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
 
     if (e.key === "e" || e.key === "E") {
-    if (currentMap === "shopping" && pig.x >= 817 && pig.x <= 1093) {
-        showBox = !showBox;
-        dialogType = "shopping";
-    }
+        if (!showBox) {
+            // Tenta abrir o balão apenas se o jogador estiver perto da barraca
+            if (currentMap === "shopping" && pig.x >= 817 && pig.x <= 1093) {
+                showBox = true;
+                dialogType = "shopping";
+            }
 
-    if (currentMap === "casa" && nearLemonade) {
-        showBox = true;
-        interactedWithLemonade = true;
-        dialogType = "lemonade";
-    }
+            if (currentMap === "casa" && nearLemonade) {
+                showBox = true;
+                interactedWithLemonade = true;
+                dialogType = "lemonade";
+            }
+        }
     }
 });
+
 
 document.addEventListener("keyup", e => {
     if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
@@ -136,12 +140,17 @@ function update() {
     if (pig.x <= 10) switchMap("left");
 
     // Interação com a barraca de limonada
-    if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
+    if (currentMap === "casa" && pig.x >= 184 && pig.x <= 416) {
         nearLemonade = true;
     } else {
         nearLemonade = false;
         interactedWithLemonade = false;
     }
+    if (!nearLemonade && dialogType === "lemonade") {
+    showBox = false;
+    dialogType = null;
+}
+
 }
 
 
@@ -183,33 +192,40 @@ function draw() {
     ctx.restore();
 
     // Caixa de diálogo
-    if (showBox || nearLemonade) {
-    const boxWidth = 700;
-    const boxHeight = 200;
-    const centerX = canvas.width / 2 - boxWidth / 2;
-    const centerY = canvas.height - boxHeight - 50;
+    // Caixa de diálogo estilo balão com seta
+if (showBox || nearLemonade) {
+    const balloonX = 300;
+    const balloonY = 370;
+    const balloonWidth = 220;
+    const balloonHeight = 100;
+    const pointerSize = 20;
 
-    ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
-    drawRoundedRect(centerX, centerY, boxWidth, boxHeight, 15);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgb(80, 130, 70)";
+    // Fundo branco com transparência e borda preta
+    ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+    ctx.strokeStyle = "black";
     ctx.lineWidth = 4;
+
+    // Desenha balão arredondado
+    drawRoundedRect(balloonX, balloonY, balloonWidth, balloonHeight, 20);
+    ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "white";
-    ctx.font = "20px sans-serif";
-    ctx.fillText("Pressione 'E' para continuar...", centerX + 20, centerY + 50);
+    // Desenha ponteiro (seta) apontando para a barraca
+    ctx.beginPath();
+    ctx.moveTo(balloonX + 50, balloonY + balloonHeight); // base da seta
+    ctx.lineTo(balloonX + 70, balloonY + balloonHeight + pointerSize); // ponta da seta
+    ctx.lineTo(balloonX + 90, balloonY + balloonHeight); // outra base
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
 
-    ctx.font = "18px sans-serif";
-    if (dialogType === "shopping") {
-        ctx.fillText("Olá, viajante! Bem-vindo ao mundo dos porcos aventureiros.", centerX + 20, centerY + 90);
-    } else if (dialogType === "lemonade") {
-        ctx.fillText("Olá! Quer uma limonada geladinha por 1 moeda?", centerX + 20, centerY + 90);
-    } else {
-        ctx.fillText("Interação genérica.", centerX + 20, centerY + 90);
-    }
-    }
+    // Texto
+    ctx.fillStyle = "black";
+    ctx.font = "20px sans-serif";
+    ctx.fillText("Aperte E para", balloonX + 40, balloonY + 45);
+    ctx.fillText("Interagir", balloonX + 70, balloonY + 70);
+}
+
 
     // HUD (interface gráfica)
     const layoutWidth = 250;
