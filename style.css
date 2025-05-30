@@ -11,12 +11,20 @@
     align-items: center;
     justify-content: center;
     z-index: 1000; /* sobrepor a tela do jogo */
+    opacity: 1;
+    transition: opacity 0.8s ease; /* ease cria uma transição suave */
+    pointer-events: all;
 }
 
 #startScreenLogo{
     width: 40vw;
     max-width: 800px;
     height: auto;
+}
+
+#startScreen.fade-out{
+    opacity: 0;
+    pointer-events: none;
 }
 
 #startButton{

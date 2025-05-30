@@ -1,6 +1,11 @@
 document.addEventListener("DOMContentLoaded", function(){
     document.getElementById("startButton").addEventListener("click", function(){
-        document.getElementById("startScreen").style.display = "none";
+        const screen = document.getElementById("startScreen");
+        screen.classList.add("fade-out"); // Adiciona a classe CSS fade-out (transição de opacidade)
+
+        setTimeout(() =>{
+            screen.style.display = "none"; // Esconde a tela completamente
+        }, 800); // Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
     });
 });
 
@@ -45,6 +50,19 @@ const maps = {
     casino: { transitions: { left: "shopping" } }
 };
 
+const lemonadeStand = {
+    xPercent: 0.15,
+    widthPercent: 0.1,
+    height: 30,
+    x: 0,
+    y: 0,
+    updatePosition: function(){
+        this.x = canvas.width * this.xPercent;
+        this.width = canvas.width * this.widthPercent;
+        this.y = sidewalkY - this.height;
+    }
+}
+
 function resizeCanvas() {
     const navbarHeight = document.getElementById("mainNavbar").offsetHeight;
     canvas.width = window.innerWidth;
@@ -52,6 +70,8 @@ function resizeCanvas() {
 
     // Ajusta dinamicamente a posição vertical da calçada a partir da altura da tela
     sidewalkY = canvas.height - pig.height - (canvas.height * 0.18);
+
+    lemonadeStand.updatePosition();
 }
 
 function switchMap(direction) {
@@ -140,7 +160,7 @@ function update() {
     if (pig.x <= 10) switchMap("left");
 
     // Interação com a barraca de limonada
-    if (currentMap === "casa" && pig.x >= 184 && pig.x <= 416) {
+    if (currentMap === "casa" && pig.x + pig.width > lemonadeStand.x && pig.x < lemonadeStand.x + lemonadeStand.width) {
         nearLemonade = true;
     } else {
         nearLemonade = false;
@@ -152,7 +172,6 @@ function update() {
 }
 
 }
-
 
 let dialogType = null;
 let nearLemonade = false;
@@ -194,11 +213,12 @@ function draw() {
     // Caixa de diálogo
     // Caixa de diálogo estilo balão com seta
 if (showBox || nearLemonade) {
-    const balloonX = 300;
-    const balloonY = 370;
     const balloonWidth = 220;
     const balloonHeight = 100;
     const pointerSize = 20;
+
+    const balloonX = lemonadeStand.x + lemonadeStand.width / 2 - balloonWidth / 2;
+    const balloonY = lemonadeStand.y - balloonHeight - pointerSize - 10;
 
     // Fundo branco com transparência e borda preta
     ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
@@ -225,7 +245,6 @@ if (showBox || nearLemonade) {
     ctx.fillText("Aperte E para", balloonX + 40, balloonY + 45);
     ctx.fillText("Interagir", balloonX + 70, balloonY + 70);
 }
-
 
     // HUD (interface gráfica)
     const layoutWidth = 250;
