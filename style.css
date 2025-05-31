@@ -59,3 +59,14 @@ canvas{
     color: #fff;
     font-size: 25px;
 }
+
+.dialogBox{
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.dialogBox.visible{
+    opacity: 1;
+    transform: translateY(0);
+}
