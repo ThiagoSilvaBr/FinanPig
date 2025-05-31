@@ -1,11 +1,11 @@
-document.addEventListener("DOMContentLoaded", function(){
-    document.getElementById("startButton").addEventListener("click", function(){
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("startButton").addEventListener("click", function () {
         const screen = document.getElementById("startScreen");
-        screen.classList.add("fade-out");// Adiciona a classe CSS fade-out (transição de opacidade)
+        screen.classList.add("fade-out"); // Adiciona a classe CSS fade-out (transição de opacidade)
 
-        setTimeout(() =>{
-            screen.style.display = "none";// Esconde a tela completamente
-        }, 800);// Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
+        setTimeout(() => {
+            screen.style.display = "none"; // Esconde a tela completamente
+        }, 800); // Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
     });
 });
 
@@ -89,6 +89,14 @@ let nearDoor = false;
 let interactedWithDoor = false;
 let justClosedDoorDialog = false;
 
+let nearShoppingDoor = false;
+let interactedWithShoppingDoor = false;
+let justClosedShoppingDoorDialog = false;
+
+let nearCasinoDoor = false;
+let interactedWithCasinoDoor = false;
+let justClosedCasinoDoorDialog = false;
+
 const dialogManager = {
     active: false,
     type: null,
@@ -153,27 +161,15 @@ document.addEventListener("keydown", e => {
     if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
 
     if (e.key === "e" || e.key === "E") {
-        if (currentMap === "shopping" && pig.x >= 817 && pig.x <= 1093) {
-            if (!dialogManager.active) {
-                dialogManager.show(
-                    "shopping",
-                    "Olá, viajante! Bem-vindo ao mundo dos porcos aventureiros.",
-                    "Pressione 'E' para fechar."
-                );
-            } else {
-                dialogManager.hide();
-            }
-        }
-
         if (currentMap === "casa" && nearLemonade) {
             if (dialogManager.active && dialogManager.type === "lemonade") {
                 dialogManager.hide();
                 justClosedLemonadeDialog = true;
                 setTimeout(() => {
-                    justClosedLemonadeDialog = false;// Depois de 500ms libera o lemonade hint de novo
+                    justClosedLemonadeDialog = false; // Depois de 500ms libera o lemonade hint de novo
                 }, 500);
             } else {
-            // Caso contrário, sempre mostra o diálogo da limonada
+                // Caso contrário, sempre mostra o diálogo da limonada
                 dialogManager.show(
                     "lemonade",
                     "Gostaria de uma limonada geladinha por 25 moedas?",
@@ -197,6 +193,40 @@ document.addEventListener("keydown", e => {
                     "Pressione 'E' para fechar."
                 );
                 interactedWithDoor = true;
+            }
+        }
+
+        if (currentMap === "shopping" && nearShoppingDoor) {
+            if (dialogManager.active && dialogManager.type === "shoppingDoor") {
+                dialogManager.hide();
+                justClosedShoppingDoorDialog = true;
+                setTimeout(() => {
+                    justClosedShoppingDoorDialog = false;
+                }, 500);
+            } else {
+                dialogManager.show(
+                    "shoppingDoor",
+                    "Você deseja entrar no shopping?",
+                    "Pressione 'E' para fechar."
+                );
+                interactedWithShoppingDoor = true;
+            }
+        }
+
+        if (currentMap === "casino" && nearCasinoDoor) {
+            if (dialogManager.active && dialogManager.type === "casinoDoor") {
+                dialogManager.hide();
+                justClosedCasinoDoorDialog = true;
+                setTimeout(() => {
+                    justClosedCasinoDoorDialog = false;
+                }, 500);
+            } else {
+                dialogManager.show(
+                    "casinoDoor",
+                    "Você deseja entrar no cassino?",
+                    "Pressione 'E' para fechar."
+                );
+                interactedWithCasinoDoor = true;
             }
         }
     }
@@ -247,7 +277,7 @@ function update() {
             dialogManager.show(
                 "lemonadeHint",
                 "Barraquinha de Limonada!",
-                "Pressione 'E' para interagir." 
+                "Pressione 'E' para interagir."
             );
         }
     } else {
@@ -255,7 +285,7 @@ function update() {
         interactedWithLemonade = false;
         if (dialogManager.type === "lemonade" || dialogManager.type === "lemonadeHint") {
             dialogManager.hide();
-        }    
+        }
     }
 
     // Interação com a porta
@@ -272,6 +302,42 @@ function update() {
         nearDoor = false;
         interactedWithDoor = false;
         if (dialogManager.type === "door" || dialogManager.type === "doorHint") {
+            dialogManager.hide();
+        }
+    }
+
+    // Interação com a porta do shopping
+    if (currentMap === "shopping" && pig.x >= 280 && pig.x <= 464) {
+        nearShoppingDoor = true;
+        if (!dialogManager.active && !justClosedShoppingDoorDialog) {
+            dialogManager.show(
+                "shoppingDoorHint",
+                "Porta do shopping!",
+                "Pressione 'E' para interagir."
+            );
+        }
+    } else {
+        nearShoppingDoor = false;
+        interactedWithShoppingDoor = false;
+        if (dialogManager.type === "shoppingDoor" || dialogManager.type === "shoppingDoorHint") {
+            dialogManager.hide();
+        }
+    }
+
+    // Interação com a porta do cassino
+    if (currentMap === "casino" && pig.x >= 312 && pig.x <= 472) {
+        nearCasinoDoor = true;
+        if (!dialogManager.active && !justClosedCasinoDoorDialog) {
+            dialogManager.show(
+                "casinoDoorHint",
+                "Porta do Cassino!",
+                "Pressione 'E' para interagir."
+            );
+        }
+    } else {
+        nearCasinoDoor = false;
+        interactedWithCasinoDoor = false;
+        if (dialogManager.type === "casinoDoor" || dialogManager.type === "casinoDoorHint") {
             dialogManager.hide();
         }
     }
@@ -314,7 +380,7 @@ function draw() {
     // Desenha diálogo gerenciado pelo dialogManager
     dialogManager.draw(ctx, canvas);
 
-     // Estilo do HUD (interface gráfica)
+    // Estilo do HUD (interface gráfica)
     const layoutWidth = 250;
     const layoutHeight = 80;
     const padding = 10;
