@@ -1,11 +1,11 @@
 document.addEventListener("DOMContentLoaded", function(){
     document.getElementById("startButton").addEventListener("click", function(){
         const screen = document.getElementById("startScreen");
-        screen.classList.add("fade-out"); // Adiciona a classe CSS fade-out (transição de opacidade)
+        screen.classList.add("fade-out");// Adiciona a classe CSS fade-out (transição de opacidade)
 
         setTimeout(() =>{
-            screen.style.display = "none"; // Esconde a tela completamente
-        }, 800); // Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
+            screen.style.display = "none";// Esconde a tela completamente
+        }, 800);// Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
     });
 });
 
@@ -69,7 +69,6 @@ function switchMap(direction) {
         };
 
         loadMap(mapFileNames[currentMap]);
-
         resizeCanvas();
         pig.x = direction === "right" ? 0 : canvas.width - pig.width;
         setTimeout(() => canSwitchMap = true, 300);
@@ -85,6 +84,10 @@ const keys = {
 let nearLemonade = false;
 let interactedWithLemonade = false;
 let justClosedLemonadeDialog = false;
+
+let nearDoor = false;
+let interactedWithDoor = false;
+let justClosedDoorDialog = false;
 
 const dialogManager = {
     active: false,
@@ -167,18 +170,34 @@ document.addEventListener("keydown", e => {
                 dialogManager.hide();
                 justClosedLemonadeDialog = true;
                 setTimeout(() => {
-                    justClosedLemonadeDialog = false; // Depois de 500ms libera o lemonade hint de novo
+                    justClosedLemonadeDialog = false;// Depois de 500ms libera o lemonade hint de novo
                 }, 500);
             } else {
-        // Caso contrário, sempre mostra o diálogo da limonada
-        dialogManager.show(
-            "lemonade",
-            "Gostaria de uma limonada geladinha por 25 moedas?",
-            "Pressione 'E' para fechar."
-        );
+            // Caso contrário, sempre mostra o diálogo da limonada
+                dialogManager.show(
+                    "lemonade",
+                    "Gostaria de uma limonada geladinha por 25 moedas?",
+                    "Pressione 'E' para fechar."
+                );
                 interactedWithLemonade = true;
             }
+        }
 
+        if (currentMap === "casa" && nearDoor) {
+            if (dialogManager.active && dialogManager.type === "door") {
+                dialogManager.hide();
+                justClosedDoorDialog = true;
+                setTimeout(() => {
+                    justClosedDoorDialog = false;
+                }, 500);
+            } else {
+                dialogManager.show(
+                    "door",
+                    "Você deseja entrar na casa?",
+                    "Pressione 'E' para fechar."
+                );
+                interactedWithDoor = true;
+            }
         }
     }
 });
@@ -221,10 +240,10 @@ function update() {
     if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
     if (pig.x <= 10) switchMap("left");
 
-    // Interação com a barraca de limonada
+    // Interação com a limonada
     if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
         nearLemonade = true;
-        if(!dialogManager.active && !justClosedLemonadeDialog){
+        if (!dialogManager.active && !justClosedLemonadeDialog) {
             dialogManager.show(
                 "lemonadeHint",
                 "Barraquinha de Limonada!",
@@ -237,6 +256,24 @@ function update() {
         if (dialogManager.type === "lemonade" || dialogManager.type === "lemonadeHint") {
             dialogManager.hide();
         }    
+    }
+
+    // Interação com a porta
+    if (currentMap === "casa" && pig.x >= 344 && pig.x <= 480) {
+        nearDoor = true;
+        if (!dialogManager.active && !justClosedDoorDialog) {
+            dialogManager.show(
+                "doorHint",
+                "Porta da Casa!",
+                "Pressione 'E' para interagir."
+            );
+        }
+    } else {
+        nearDoor = false;
+        interactedWithDoor = false;
+        if (dialogManager.type === "door" || dialogManager.type === "doorHint") {
+            dialogManager.hide();
+        }
     }
 
     // Atualiza o diálogo (fade)
@@ -277,7 +314,7 @@ function draw() {
     // Desenha diálogo gerenciado pelo dialogManager
     dialogManager.draw(ctx, canvas);
 
-    // Estilo do HUD (interface gráfica)
+     // Estilo do HUD (interface gráfica)
     const layoutWidth = 250;
     const layoutHeight = 80;
     const padding = 10;
