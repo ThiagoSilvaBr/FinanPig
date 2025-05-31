@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", function(){
     });
 });
 
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -37,11 +36,9 @@ const pig = {
 
 const gravity = 0.5;
 const jumpForce = -12;
-let groundY = 0;
 let sidewalkY = 0;
 
 let currentMap = "casa";
-let showBox = false;
 let canSwitchMap = true;
 
 const maps = {
@@ -50,19 +47,6 @@ const maps = {
     casino: { transitions: { left: "shopping" } }
 };
 
-const lemonadeStand = {
-    xPercent: 0.15,
-    widthPercent: 0.1,
-    height: 30,
-    x: 0,
-    y: 0,
-    updatePosition: function(){
-        this.x = canvas.width * this.xPercent;
-        this.width = canvas.width * this.widthPercent;
-        this.y = sidewalkY - this.height;
-    }
-}
-
 function resizeCanvas() {
     const navbarHeight = document.getElementById("mainNavbar").offsetHeight;
     canvas.width = window.innerWidth;
@@ -70,27 +54,25 @@ function resizeCanvas() {
 
     // Ajusta dinamicamente a posição vertical da calçada a partir da altura da tela
     sidewalkY = canvas.height - pig.height - (canvas.height * 0.18);
-
-    lemonadeStand.updatePosition();
 }
 
 function switchMap(direction) {
     const nextMap = maps[currentMap].transitions[direction];
     if (nextMap && canSwitchMap) {
-    currentMap = nextMap;
-    canSwitchMap = false;
+        currentMap = nextMap;
+        canSwitchMap = false;
 
-    const mapFileNames = {
-        casa: "mapa-casa",
-        shopping: "mapa-shopping",
-        casino: "mapa-cassino-dia"
-    };
+        const mapFileNames = {
+            casa: "mapa-casa",
+            shopping: "mapa-shopping",
+            casino: "mapa-cassino-dia"
+        };
 
-    loadMap(mapFileNames[currentMap]);
+        loadMap(mapFileNames[currentMap]);
 
-    resizeCanvas();
-    pig.x = direction === "right" ? 0 : canvas.width - pig.width;
-    setTimeout(() => canSwitchMap = true, 300);
+        resizeCanvas();
+        pig.x = direction === "right" ? 0 : canvas.width - pig.width;
+        setTimeout(() => canSwitchMap = true, 300);
     }
 }
 
@@ -100,26 +82,106 @@ const keys = {
     ArrowRight: false
 };
 
+let nearLemonade = false;
+let interactedWithLemonade = false;
+let justClosedLemonadeDialog = false;
+
+const dialogManager = {
+    active: false,
+    type: null,
+    opacity: 0,
+    text: "",
+    subtext: "",
+
+    show(type, text, subtext = "") {
+        this.active = true;
+        this.type = type;
+        this.text = text;
+        this.subtext = subtext;
+    },
+
+    hide() {
+        this.active = false;
+        this.type = null;
+    },
+
+    update() {
+        const target = this.active ? 1 : 0;
+        const speed = 0.1;
+        this.opacity += (target - this.opacity) * speed;
+        this.opacity = Math.max(0, Math.min(1, this.opacity));
+    },
+
+    // Estilo do balão de interação (balão maior)
+    draw(ctx, canvas) {
+        if (this.opacity < 0.01) return;
+
+        const boxWidth = Math.min(canvas.width * 0.8, 600);
+        const boxHeight = 200;
+        const centerX = canvas.width / 2 - boxWidth / 2;
+        const centerY = 10;
+
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.translate(0, (1 - this.opacity) * -20);
+
+        ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
+        drawRoundedRect(centerX, centerY, boxWidth, boxHeight, 15);
+        ctx.fill();
+
+        ctx.strokeStyle = "rgb(80, 130, 70)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "white";
+        ctx.font = "20px sans-serif";
+        ctx.fillText(this.text, centerX + 20, centerY + 50);
+
+        if (this.subtext) {
+            ctx.font = "18px sans-serif";
+            ctx.fillText(this.subtext, centerX + 20, centerY + 90);
+        }
+
+        ctx.restore();
+    }
+};
+
 document.addEventListener("keydown", e => {
     if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
 
     if (e.key === "e" || e.key === "E") {
-        if (!showBox) {
-            // Tenta abrir o balão apenas se o jogador estiver perto da barraca
-            if (currentMap === "shopping" && pig.x >= 817 && pig.x <= 1093) {
-                showBox = true;
-                dialogType = "shopping";
+        if (currentMap === "shopping" && pig.x >= 817 && pig.x <= 1093) {
+            if (!dialogManager.active) {
+                dialogManager.show(
+                    "shopping",
+                    "Olá, viajante! Bem-vindo ao mundo dos porcos aventureiros.",
+                    "Pressione 'E' para fechar."
+                );
+            } else {
+                dialogManager.hide();
+            }
+        }
+
+        if (currentMap === "casa" && nearLemonade) {
+            if (dialogManager.active && dialogManager.type === "lemonade") {
+                dialogManager.hide();
+                justClosedLemonadeDialog = true;
+                setTimeout(() => {
+                    justClosedLemonadeDialog = false; // Depois de 500ms libera o lemonade hint de novo
+                }, 500);
+            } else {
+        // Caso contrário, sempre mostra o diálogo da limonada
+        dialogManager.show(
+            "lemonade",
+            "Gostaria de uma limonada geladinha por 25 moedas?",
+            "Pressione 'E' para fechar."
+        );
+                interactedWithLemonade = true;
             }
 
-            if (currentMap === "casa" && nearLemonade) {
-                showBox = true;
-                interactedWithLemonade = true;
-                dialogType = "lemonade";
-            }
         }
     }
 });
-
 
 document.addEventListener("keyup", e => {
     if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
@@ -140,7 +202,7 @@ function update() {
     pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
 
     // Pula
-    if(keys.ArrowUp && !pig.isJumping){
+    if (keys.ArrowUp && !pig.isJumping) {
         pig.velocityY = jumpForce;
         pig.isJumping = true;
     }
@@ -150,7 +212,7 @@ function update() {
     pig.y += pig.velocityY;
 
     // Para na calçada ao pular
-    if(pig.y >= sidewalkY){
+    if (pig.y >= sidewalkY) {
         pig.y = sidewalkY;
         pig.velocityY = 0;
         pig.isJumping = false;
@@ -160,25 +222,27 @@ function update() {
     if (pig.x <= 10) switchMap("left");
 
     // Interação com a barraca de limonada
-    if (currentMap === "casa" && pig.x + pig.width > lemonadeStand.x && pig.x < lemonadeStand.x + lemonadeStand.width) {
+    if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
         nearLemonade = true;
+        if(!dialogManager.active && !justClosedLemonadeDialog){
+            dialogManager.show(
+                "lemonadeHint",
+                "Barraquinha de Limonada!",
+                "Pressione 'E' para interagir." 
+            );
+        }
     } else {
         nearLemonade = false;
         interactedWithLemonade = false;
+        if (dialogManager.type === "lemonade" || dialogManager.type === "lemonadeHint") {
+            dialogManager.hide();
+        }    
     }
-    if (!nearLemonade && dialogType === "lemonade") {
-    showBox = false;
-    dialogType = null;
+
+    // Atualiza o diálogo (fade)
+    dialogManager.update();
 }
 
-}
-
-let dialogType = null;
-let nearLemonade = false;
-let interactedWithLemonade = false;
-
-// Função para desenhar uma borda com cantos arredondados ao HUD.
-// Precisa chamar ctx.fill() para preencher a caixa e/ou ctx.stroke() para desenhar o contorno.
 function drawRoundedRect(x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -191,7 +255,7 @@ function drawRoundedRect(x, y, width, height, radius) {
     ctx.lineTo(x, y + radius);
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
-    }
+}
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -202,51 +266,18 @@ function draw() {
     // Desenhar personagem
     ctx.save();
     if (pig.direction === "left") {
-    ctx.translate(pig.x + pig.width, pig.y);
-    ctx.scale(-1, 1);
-    ctx.drawImage(assets.pig, 0, 0, pig.width, pig.height);
+        ctx.translate(pig.x + pig.width, pig.y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(assets.pig, 0, 0, pig.width, pig.height);
     } else {
-    ctx.drawImage(assets.pig, pig.x, pig.y, pig.width, pig.height);
+        ctx.drawImage(assets.pig, pig.x, pig.y, pig.width, pig.height);
     }
     ctx.restore();
 
-    // Caixa de diálogo
-    // Caixa de diálogo estilo balão com seta
-if (showBox || nearLemonade) {
-    const balloonWidth = 220;
-    const balloonHeight = 100;
-    const pointerSize = 20;
+    // Desenha diálogo gerenciado pelo dialogManager
+    dialogManager.draw(ctx, canvas);
 
-    const balloonX = lemonadeStand.x + lemonadeStand.width / 2 - balloonWidth / 2;
-    const balloonY = lemonadeStand.y - balloonHeight - pointerSize - 10;
-
-    // Fundo branco com transparência e borda preta
-    ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 4;
-
-    // Desenha balão arredondado
-    drawRoundedRect(balloonX, balloonY, balloonWidth, balloonHeight, 20);
-    ctx.fill();
-    ctx.stroke();
-
-    // Desenha ponteiro (seta) apontando para a barraca
-    ctx.beginPath();
-    ctx.moveTo(balloonX + 50, balloonY + balloonHeight); // base da seta
-    ctx.lineTo(balloonX + 70, balloonY + balloonHeight + pointerSize); // ponta da seta
-    ctx.lineTo(balloonX + 90, balloonY + balloonHeight); // outra base
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // Texto
-    ctx.fillStyle = "black";
-    ctx.font = "20px sans-serif";
-    ctx.fillText("Aperte E para", balloonX + 40, balloonY + 45);
-    ctx.fillText("Interagir", balloonX + 70, balloonY + 70);
-}
-
-    // HUD (interface gráfica)
+    // Estilo do HUD (interface gráfica)
     const layoutWidth = 250;
     const layoutHeight = 80;
     const padding = 10;
@@ -276,19 +307,17 @@ let assetsLoaded = 0;
 function checkAllLoaded() {
     assetsLoaded++;
     if (assetsLoaded === 2) {
-    resizeCanvas();
-    // Pig spawna na frente de casa
-    pig.x = (canvas.width - pig.width) / 2;
-    pig.y = sidewalkY;
-    gameLoop();
+        resizeCanvas();
+        // Pig spawna na frente de casa
+        pig.x = (canvas.width - pig.width) / 2;
+        pig.y = sidewalkY;
+        gameLoop();
     }
 }
 
-// Início
 assets.background.onload = checkAllLoaded;
 assets.pig.onload = checkAllLoaded;
 
-// Primeiro mapa
 loadMap('mapa-casa');
 
 window.addEventListener("resize", resizeCanvas);
