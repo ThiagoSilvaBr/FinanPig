@@ -3,18 +3,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const screen = document.getElementById("startScreen");
     screen.classList.add("fade-out"); // Adiciona a classe CSS fade-out (transição de opacidade)
 
-    setTimeout(() => {
-      screen.style.display = "none"; // Esconde a tela completamente
-    }, 800); // Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
-  });
-
-  //adiciona um botao de voltar ao inicio no navabar 
-  const backButton = document.getElementById("backToMenu");
-  backButton.addEventListener("click", function () {
-    const screen = document.getElementById("startScreen");
-    screen.style.display = "flex";
-    screen.classList.remove("fade-out");
-  });
+        setTimeout(() => {
+            screen.style.display = "none"; // Esconde a tela completamente
+        }, 800); // Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
+    });
 });
 
 const canvas = document.getElementById("gameCanvas");
@@ -50,11 +42,9 @@ let currentMap = "casa";
 let canSwitchMap = true;
 
 const maps = {
-  casa: { transitions: { right: "shopping" } },
-  shopping: { transitions: { left: "casa", right: "casino" } },
-  casino: { transitions: { left: "shopping" } },
-  casinoInterno: { transitions: {} },
-  sala: { transitions: {} },
+    casa: { transitions: { right: "shopping" } },
+    shopping: { transitions: { left: "casa", right: "casino" } },
+    casino: { transitions: { left: "shopping" } }
 };
 
 function resizeCanvas() {
@@ -67,26 +57,22 @@ function resizeCanvas() {
 }
 
 function switchMap(direction) {
-  const nextMap = maps[currentMap].transitions[direction];
-  if (nextMap && canSwitchMap) {
-    const previousMap = currentMap;
-    currentMap = nextMap;
-    canSwitchMap = false;
+    const nextMap = maps[currentMap].transitions[direction];
+    if (nextMap && canSwitchMap) {
+        currentMap = nextMap;
+        canSwitchMap = false;
 
-    const mapFileNames = {
-      casa: "mapa-casa",
-      shopping: "mapa-shopping",
-      casino: "mapa-cassino-dia",
-      casinoInterno: "mapa-cassino-interno",
-      sala: "mapa-sala",
-    };
+        const mapFileNames = {
+            casa: "mapa-casa",
+            shopping: "mapa-shopping",
+            casino: "mapa-cassino-dia"
+        };
 
-    loadMap(mapFileNames[currentMap]);
-    resizeCanvas();
-
-    pig.x = direction === "right" ? 0 : canvas.width - pig.width;
-    setTimeout(() => (canSwitchMap = true), 300);
-  }
+        loadMap(mapFileNames[currentMap]);
+        resizeCanvas();
+        pig.x = direction === "right" ? 0 : canvas.width - pig.width;
+        setTimeout(() => canSwitchMap = true, 300);
+    }
 }
 
 const keys = {
@@ -164,13 +150,10 @@ const dialogManager = {
     ctx.font = "20px sans-serif";
     ctx.fillText(this.text, centerX + 20, centerY + 50);
 
-    if (this.subtext) {
-      ctx.font = "18px sans-serif";
-      const lines = this.subtext.split("\n");
-      lines.forEach((line, index) => {
-        ctx.fillText(line, centerX + 20, centerY + 90 + index * 25); // Configura espaço entre as linhas
-      });
-    }
+        if (this.subtext) {
+            ctx.font = "18px sans-serif";
+            ctx.fillText(this.subtext, centerX + 20, centerY + 90);
+        }
 
     ctx.restore();
   },
@@ -182,116 +165,79 @@ function isNearCenter(threshold = 0.06) {
   return pig.x + pig.width >= center - range && pig.x <= center + range;
 }
 
-document.addEventListener("keydown", (e) => {
-  if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+document.addEventListener("keydown", e => {
+    if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
 
-  // ESC fecha qualquer balão
-  if (e.key === "Escape") {
-    if (dialogManager.active) {
-      const closedType = dialogManager.type;
-      dialogManager.hide();
+    if (e.key === "e" || e.key === "E") {
+        if (currentMap === "casa" && nearLemonade) {
+            if (dialogManager.active && dialogManager.type === "lemonade") {
+                dialogManager.hide();
+                justClosedLemonadeDialog = true;
+                setTimeout(() => {
+                    justClosedLemonadeDialog = false; // Depois de 500ms libera o lemonade hint de novo
+                }, 500);
+            } else {
+                // Caso contrário, sempre mostra o diálogo da limonada
+                dialogManager.show(
+                    "lemonade",
+                    "Gostaria de uma limonada geladinha por 25 moedas?",
+                    "Pressione 'E' para fechar."
+                );
+                interactedWithLemonade = true;
+            }
+        }
 
-      // Marca o balão como "recentemente fechado"
-      switch (closedType) {
-        case "lemonade":
-        case "lemonadeHint":
-          justClosedLemonadeDialog = true;
-          setTimeout(() => (justClosedLemonadeDialog = false), 500);
-          break;
-        case "door":
-        case "doorHint":
-          justClosedDoorDialog = true;
-          setTimeout(() => (justClosedDoorDialog = false), 500);
-          break;
-        case "shoppingDoor":
-        case "shoppingDoorHint":
-          justClosedShoppingDoorDialog = true;
-          setTimeout(() => (justClosedShoppingDoorDialog = false), 500);
-          break;
-        case "casinoDoor":
-        case "casinoDoorHint":
-          justClosedCasinoDoorDialog = true;
-          setTimeout(() => (justClosedCasinoDoorDialog = false), 500);
-          break;
-      }
+        if (currentMap === "casa" && nearDoor) {
+            if (dialogManager.active && dialogManager.type === "door") {
+                dialogManager.hide();
+                justClosedDoorDialog = true;
+                setTimeout(() => {
+                    justClosedDoorDialog = false;
+                }, 500);
+            } else {
+                dialogManager.show(
+                    "door",
+                    "Você deseja entrar na casa?",
+                    "Pressione 'E' para fechar."
+                );
+                interactedWithDoor = true;
+            }
+        }
+
+        if (currentMap === "shopping" && nearShoppingDoor) {
+            if (dialogManager.active && dialogManager.type === "shoppingDoor") {
+                dialogManager.hide();
+                justClosedShoppingDoorDialog = true;
+                setTimeout(() => {
+                    justClosedShoppingDoorDialog = false;
+                }, 500);
+            } else {
+                dialogManager.show(
+                    "shoppingDoor",
+                    "Você deseja entrar no shopping?",
+                    "Pressione 'E' para fechar."
+                );
+                interactedWithShoppingDoor = true;
+            }
+        }
+
+        if (currentMap === "casino" && nearCasinoDoor) {
+            if (dialogManager.active && dialogManager.type === "casinoDoor") {
+                dialogManager.hide();
+                justClosedCasinoDoorDialog = true;
+                setTimeout(() => {
+                    justClosedCasinoDoorDialog = false;
+                }, 500);
+            } else {
+                dialogManager.show(
+                    "casinoDoor",
+                    "Você deseja entrar no cassino?",
+                    "Pressione 'E' para fechar."
+                );
+                interactedWithCasinoDoor = true;
+            }
+        }
     }
-  }
-
-  if (e.key === "e" || e.key === "E") {
-    if (currentMap === "casa" && nearLemonade) {
-      dialogManager.show(
-        "lemonade",
-        "Gostaria de uma limonada geladinha por 25 moedas?",
-        "Pressione 'ESC' para fechar."
-      );
-      interactedWithLemonade = true;
-    }
-
-    if (currentMap === "casa" && nearDoor) {
-      if (dialogManager.active && dialogManager.type === "door") {
-        // Na segunda vez que pressionar 'E' entra na casa
-        currentMap = "sala";
-        loadMap("mapa-sala");
-        resizeCanvas();
-        pig.x = canvas.width / 2 - pig.width / 2;
-        pig.y = sidewalkY;
-        dialogManager.hide();
-      } else {
-        dialogManager.show(
-          "door",
-          "Deseja entrar na casa?",
-          "'E' para entrar\n'ESC' para cancelar."
-        );
-      }
-    }
-
-    if (currentMap === "shopping" && nearShoppingDoor) {
-      dialogManager.show(
-        "shoppingDoor",
-        "Deseja entrar no shopping?",
-        "Pressione 'ESC' para fechar."
-      );
-      interactedWithShoppingDoor = true;
-    }
-
-    if (currentMap === "casino" && nearCasinoDoor) {
-      if (dialogManager.active && dialogManager.type === "casinoDoor") {
-        // Na segunda vez que pressionar 'E' entra no cassino
-        currentMap = "casinoInterno";
-        loadMap("mapa-cassino-interno");
-        resizeCanvas();
-        pig.x = canvas.width / 2 - pig.width / 2;
-        pig.y = sidewalkY;
-        dialogManager.hide();
-      } else {
-        dialogManager.show(
-          "casinoDoor",
-          "Deseja entrar no cassino?",
-          "'E' para entrar\n'ESC' para cancelar."
-        );
-      }
-    }
-
-    // Saída do cassino interno
-    if (currentMap === "casinoInterno" && nearCasinoExit) {
-      currentMap = "casino";
-      loadMap("mapa-cassino-dia");
-      resizeCanvas();
-      pig.x = canvas.width / 2 - pig.width / 2;
-      pig.y = sidewalkY;
-      dialogManager.hide();
-    }
-
-    // Saída da sala
-    if (currentMap === "sala" && nearRoomExit) {
-      currentMap = "casa";
-      loadMap("mapa-casa");
-      resizeCanvas();
-      pig.x = canvas.width / 2 - pig.width / 2;
-      pig.y = sidewalkY;
-      dialogManager.hide();
-    }
-  }
 });
 
 document.addEventListener("keyup", (e) => {
@@ -329,12 +275,8 @@ function update() {
     pig.isJumping = false;
   }
 
-  const internalMaps = ["casinoInterno", "sala"];
-
-  if (!internalMaps.includes(currentMap)) {
     if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
     if (pig.x <= 10) switchMap("left");
-  }
 
   // Interação com a limonada
   if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
@@ -357,94 +299,59 @@ function update() {
     }
   }
 
-  // Interação com a porta da casa
-  if (currentMap === "casa" && isNearCenter()) {
-    nearDoor = true;
-    if (!dialogManager.active && !justClosedDoorDialog) {
-      dialogManager.show(
-        "doorHint",
-        "Porta da Casa!",
-        "Pressione 'E' para interagir."
-      );
+    // Interação com a porta
+    if (currentMap === "casa" && pig.x >= 344 && pig.x <= 480) {
+        nearDoor = true;
+        if (!dialogManager.active && !justClosedDoorDialog) {
+            dialogManager.show(
+                "doorHint",
+                "Porta da Casa!",
+                "Pressione 'E' para interagir."
+            );
+        }
+    } else {
+        nearDoor = false;
+        interactedWithDoor = false;
+        if (dialogManager.type === "door" || dialogManager.type === "doorHint") {
+            dialogManager.hide();
+        }
     }
-  } else {
-    nearDoor = false;
-    interactedWithDoor = false;
-    if (dialogManager.type === "door" || dialogManager.type === "doorHint") {
-      dialogManager.hide();
-    }
-  }
 
-  // Interação com a porta do shopping
-  if (currentMap === "shopping" && isNearCenter()) {
-    nearShoppingDoor = true;
-    if (!dialogManager.active && !justClosedShoppingDoorDialog) {
-      dialogManager.show(
-        "shoppingDoorHint",
-        "Porta do shopping!",
-        "Pressione 'E' para interagir."
-      );
+    // Interação com a porta do shopping
+    if (currentMap === "shopping" && pig.x >= 280 && pig.x <= 464) {
+        nearShoppingDoor = true;
+        if (!dialogManager.active && !justClosedShoppingDoorDialog) {
+            dialogManager.show(
+                "shoppingDoorHint",
+                "Porta do shopping!",
+                "Pressione 'E' para interagir."
+            );
+        }
+    } else {
+        nearShoppingDoor = false;
+        interactedWithShoppingDoor = false;
+        if (dialogManager.type === "shoppingDoor" || dialogManager.type === "shoppingDoorHint") {
+            dialogManager.hide();
+        }
     }
-  } else {
-    nearShoppingDoor = false;
-    interactedWithShoppingDoor = false;
-    if (
-      dialogManager.type === "shoppingDoor" ||
-      dialogManager.type === "shoppingDoorHint"
-    ) {
-      dialogManager.hide();
-    }
-  }
 
-  // Interação com a porta do cassino
-  if (currentMap === "casino" && isNearCenter()) {
-    nearCasinoDoor = true;
-    if (!dialogManager.active && !justClosedCasinoDoorDialog) {
-      dialogManager.show(
-        "casinoDoorHint",
-        "Porta do Cassino!",
-        "Pressione 'E' para interagir."
-      );
+    // Interação com a porta do cassino
+    if (currentMap === "casino" && pig.x >= 312 && pig.x <= 472) {
+        nearCasinoDoor = true;
+        if (!dialogManager.active && !justClosedCasinoDoorDialog) {
+            dialogManager.show(
+                "casinoDoorHint",
+                "Porta do Cassino!",
+                "Pressione 'E' para interagir."
+            );
+        }
+    } else {
+        nearCasinoDoor = false;
+        interactedWithCasinoDoor = false;
+        if (dialogManager.type === "casinoDoor" || dialogManager.type === "casinoDoorHint") {
+            dialogManager.hide();
+        }
     }
-  } else {
-    nearCasinoDoor = false;
-    interactedWithCasinoDoor = false;
-    if (
-      dialogManager.type === "casinoDoor" ||
-      dialogManager.type === "casinoDoorHint"
-    ) {
-      dialogManager.hide();
-    }
-  }
-
-  // Saída do cassino (lado direito)
-  if (
-    currentMap === "casinoInterno" &&
-    pig.x + pig.width >= canvas.width - 10
-  ) {
-    nearCasinoExit = true;
-    if (!dialogManager.active) {
-      dialogManager.show(
-        "casinoExitHint",
-        "",
-        "Pressione 'E' para sair do cassino"
-      );
-    }
-  } else if (dialogManager.type === "casinoExitHint") {
-    nearCasinoExit = false;
-    dialogManager.hide();
-  }
-
-  // Saída da sala (lado esquerdo)
-  if (currentMap === "sala" && pig.x <= 10) {
-    nearRoomExit = true;
-    if (!dialogManager.active) {
-      dialogManager.show("roomExitHint", "", "Pressione 'E' para sair da casa");
-    }
-  } else if (dialogManager.type === "roomExitHint") {
-    nearRoomExit = false;
-    dialogManager.hide();
-  }
 
   // Atualiza o diálogo (fade)
   dialogManager.update();
