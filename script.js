@@ -44,6 +44,7 @@ let canSwitchMap = true;
 const maps = {
     casa: { transitions: { right: "shopping" } },
     shopping: { transitions: { left: "casa", right: "casino" } },
+    shoppingInterno: { transitions: {} },
     casino: { transitions: { left: "shopping" } },
     casinoInterno: { transitions: {} },
     sala: { transitions: {}}
@@ -68,7 +69,8 @@ function switchMap(direction) {
         const mapFileNames = {
             casa: "mapa-casa",
             shopping: "mapa-shopping",
-            casino: "mapa-cassino-dia",
+            shoppingInterno: "mapa-shopping-interno",
+            casino: "mapa-cassino",
             casinoInterno: "mapa-cassino-interno",
             sala: "mapa-sala"
         };
@@ -97,6 +99,7 @@ let interactedWithDoor = false;
 let justClosedDoorDialog = false;
 
 let nearShoppingDoor = false;
+let nearShoppingExit = false;
 let interactedWithShoppingDoor = false;
 let justClosedShoppingDoorDialog = false;
 
@@ -168,10 +171,34 @@ const dialogManager = {
     }
 };
 
+// Função para calcular o centro do mapa, para posicionar o balão de interação de entrada aos mapas internos
 function isNearCenter(threshold = 0.06){
     const center = canvas.width / 2;
     const range = canvas.width * threshold;
     return pig.x + pig.width >= center - range && pig.x <= center + range;
+};
+
+// Função para evitar bug de não conseguir entrar mais de uma vez nos mapas internos
+function resetInteractionFlags() {
+    justClosedLemonadeDialog = false;
+    interactedWithLemonade = false;
+    nearLemonade = false;
+
+    justClosedDoorDialog = false;
+    interactedWithDoor = false;
+    nearDoor = false;
+
+    justClosedShoppingDoorDialog = false;
+    interactedWithShoppingDoor = false;
+    nearShoppingDoor = false;
+
+    justClosedCasinoDoorDialog = false;
+    interactedWithCasinoDoor = false;
+    nearCasinoDoor = false;
+
+    nearCasinoExit = false;
+    nearRoomExit = false;
+    nearShoppingExit = false;
 };
 
 document.addEventListener("keydown", e => {
@@ -238,17 +265,25 @@ document.addEventListener("keydown", e => {
         }
 
         if (currentMap === "shopping" && nearShoppingDoor) {
-            dialogManager.show(
-                "shoppingDoor",
-                "Deseja entrar no shopping?",
-                "Pressione 'ESC' para fechar."
-            );
-            interactedWithShoppingDoor = true;
+            if(dialogManager.active && dialogManager.type === "shoppingDoor"){
+                currentMap = "shoppingInterno";
+                loadMap("mapa-shopping-interno");
+                resizeCanvas();
+                pig.x = canvas.width / 2 - pig.width / 2;
+                pig.y = sidewalkY;
+                dialogManager.hide();
+            }else{
+                dialogManager.show(
+                    "shoppingDoor",
+                    "Deseja entrar no shopping?",
+                    "'E' para entrar\n'ESC' para cancelar."
+                );
+                interactedWithShoppingDoor = true;
+            }
         }
 
         if (currentMap === "casino" && nearCasinoDoor) {
             if (dialogManager.active && dialogManager.type === "casinoDoor") {
-                // Na segunda vez que pressionar 'E' entra no cassino
                 currentMap = "casinoInterno";
                 loadMap("mapa-cassino-interno");
                 resizeCanvas();
@@ -264,11 +299,20 @@ document.addEventListener("keydown", e => {
             }
         }
 
+        // Saída do shopping
+        if (currentMap === "shoppingInterno" && nearShoppingExit) {
+            currentMap = "shopping";
+            loadMap("mapa-shopping");
+            resizeCanvas();
+            pig.x = canvas.width / 2 - pig.width / 2;
+            pig.y = sidewalkY;
+            dialogManager.hide();
+        }
 
-        // Saída do cassino interno
+        // Saída do cassino
         if (currentMap === "casinoInterno" && nearCasinoExit) {
             currentMap = "casino";
-            loadMap("mapa-cassino-dia");
+            loadMap("mapa-cassino");
             resizeCanvas();
             pig.x = canvas.width / 2 - pig.width / 2;
             pig.y = sidewalkY;
@@ -284,6 +328,8 @@ document.addEventListener("keydown", e => {
             pig.y = sidewalkY;
             dialogManager.hide();
         }
+
+        resetInteractionFlags();
     }
 });
 
@@ -322,7 +368,7 @@ function update() {
         pig.isJumping = false;
     }
 
-    const internalMaps = ["casinoInterno", "sala"];
+    const internalMaps = ["shoppingInterno", "casinoInterno", "sala"];
 
     if (!internalMaps.includes(currentMap)) {
         if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
@@ -401,8 +447,19 @@ function update() {
         }
     }
 
-    // Saída do cassino (lado direito)
-    if (currentMap === "casinoInterno" && pig.x + pig.width >= canvas.width - 10) {
+    // Saída do shopping (lado esquerdo)
+    if (currentMap === "shoppingInterno" && pig.x <= 10) {
+        nearShoppingExit = true;
+        if (!dialogManager.active) {
+            dialogManager.show("shoppingExitHint", "", "Pressione 'E' para sair do shopping");
+        }
+    } else if (dialogManager.type === "shoppingExitHint") {
+        nearShoppingExit = false;
+        dialogManager.hide();
+    }
+
+    // Saída do cassino (lado esquerda)
+    if (currentMap === "casinoInterno" && pig.x <= 10) {
         nearCasinoExit = true;
         if (!dialogManager.active) {
             dialogManager.show("casinoExitHint", "", "Pressione 'E' para sair do cassino");
