@@ -1,11 +1,23 @@
 document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("startButton").addEventListener("click", function () {
-        const screen = document.getElementById("startScreen");
-        screen.classList.add("fade-out"); // Adiciona a classe CSS fade-out (transição de opacidade)
+    const screen = document.getElementById("startScreen");
+    const backToMenuButton = document.getElementById("backToMenu");
 
+    document.getElementById("startButton").addEventListener("click", function () {
+        screen.classList.add("fade-out"); // Adiciona a classe CSS fade-out (transição de opacidade)
         setTimeout(() => {
             screen.style.display = "none"; // Esconde a tela completamente
         }, 800); // Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
+    });
+
+    backToMenuButton.addEventListener("click", function(){
+        screen.style.display = "flex";
+        screen.classList.remove("fade-out");  
+
+        pig.x = (canvas.width - pig.width) / 2; // Reposiciona o personagem no local de spawn original
+        pig.y = sidewalkY;
+        currentMap = "casa";
+        loadMap("mapa-casa");
+        resizeCanvas();
     });
 });
 
