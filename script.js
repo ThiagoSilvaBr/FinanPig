@@ -59,7 +59,8 @@ const maps = {
     shoppingInterno: { transitions: {} },
     casino: { transitions: { left: "shopping" } },
     casinoInterno: { transitions: {} },
-    sala: { transitions: {}}
+    sala: { transitions: { right: "quarto" } },
+    quarto: { transitions: { left: "sala" } }
 };
 
 function resizeCanvas() {
@@ -84,7 +85,9 @@ function switchMap(direction) {
             shoppingInterno: "mapa-shopping-interno",
             casino: "mapa-cassino",
             casinoInterno: "mapa-cassino-interno",
-            sala: "mapa-sala"
+            sala: "mapa-sala",
+            quarto: "mapa-quarto",
+            quartoNoite: "mapa-quarto-noite"
         };
 
         loadMap(mapFileNames[currentMap]);
@@ -110,6 +113,12 @@ let nearRoomExit = false;
 let interactedWithDoor = false;
 let justClosedDoorDialog = false;
 
+let nearBed = false;
+let interactedWithBed = false;
+let justClosedBedDialog = false;
+let hidePig = false;
+let waitingWakeUpDismiss = false;
+
 let nearShoppingDoor = false;
 let nearShoppingExit = false;
 let interactedWithShoppingDoor = false;
@@ -121,6 +130,8 @@ let interactedWithCasinoDoor = false;
 let justClosedCasinoDoorDialog = false;
 
 let playerMoney = 100;
+let moneyBeforeSleep = 0;
+let currentDay = 1;
 
 const dialogManager = {
     active: false,
@@ -185,6 +196,20 @@ const dialogManager = {
     }
 };
 
+function updateMoneyDisplay() {
+    const moneyElement = document.getElementById("money");
+    if (moneyElement) {
+        moneyElement.textContent = `R$ ${playerMoney},00`;
+    }
+}
+
+function updateDayDisplay() {
+    const dayElement = document.getElementById("day");
+    if (dayElement) {
+        dayElement.textContent = `Dia ${currentDay}`;
+    }
+}
+
 // Função para calcular o centro do mapa, para posicionar o balão de interação de entrada aos mapas internos
 function isNearCenter(threshold = 0.06){
     const center = canvas.width / 2;
@@ -209,6 +234,10 @@ function resetInteractionFlags() {
     justClosedCasinoDoorDialog = false;
     interactedWithCasinoDoor = false;
     nearCasinoDoor = false;
+
+    justClosedBedDialog = false;
+    interactedWithBed = false;
+    nearBed = false;
 
     nearCasinoExit = false;
     nearRoomExit = false;
@@ -246,17 +275,23 @@ document.addEventListener("keydown", e => {
                     justClosedCasinoDoorDialog = true;
                     setTimeout(() => justClosedCasinoDoorDialog = false, 500);
                     break;
+                case "bed":
+                case "bedHint":
+                    justClosedBedDialog = true;
+                    setTimeout(() => justClosedBedDialog = false, 500);
+                    break;
             }
         }
     }
 
     if (event.key === "e" || event.key === "E") {
-    // Interação com limonada (requer confirmação)
+    // Interação com limonada
     if (currentMap === "casa" && nearLemonade) {
         if (dialogManager.active && dialogManager.type === "lemonade") {
             if (playerMoney >= 25) {
                 playerMoney -= 25;
                 updateMoneyDisplay();
+                updateDayDisplay();
                 dialogManager.show(
                     "lemonadeSuccess",
                     "Você comprou uma limonada!",
@@ -279,7 +314,7 @@ document.addEventListener("keydown", e => {
         }
     }
 
-    // Interação com a porta da casa para ENTRAR (requer confirmação)
+    // Interação com a porta da casa para entrar
     else if (currentMap === "casa" && nearDoor) {
         if (dialogManager.active && dialogManager.type === "door") {
             currentMap = "sala";
@@ -296,6 +331,58 @@ document.addEventListener("keydown", e => {
             );
             interactedWithDoor = true;
         }
+    }
+
+    // Interação com a cama no quarto
+    if (currentMap === "quarto" && nearBed) {
+        if (dialogManager.active && dialogManager.type === "bed") {
+            // Antes de dormir, salva quanto dinheiro o jogador tem
+            moneyBeforeSleep = playerMoney;
+
+            assets.background.onload = () => {
+                resizeCanvas();
+
+                currentDay++;
+                updateDayDisplay();
+
+                const moneyLost = Math.max(0, moneyBeforeSleep - playerMoney);
+
+                dialogManager.show(
+                    "wakeUp",
+                    `Dia ${currentDay}!`,
+                    `Zzz... 💤\nDinheiro perdido: R$ ${moneyLost},00\nPressione 'E' para levantar.`
+                );
+
+                hidePig = true;
+                waitingWakeUpDismiss = true;
+            };
+            currentMap = "quartoNoite";
+            loadMap("mapa-quarto-noite");
+        } else {
+            dialogManager.show(
+                "bed",
+                "Deseja dormir um pouco?",
+                "'E' para dormir\n'ESC' para cancelar."
+            );
+            interactedWithBed = true;
+        }
+    }
+
+    // Se está na tela de "wakeUp", e o jogador pressiona E novamente
+    if (waitingWakeUpDismiss && dialogManager.active && dialogManager.type === "wakeUp") {
+        dialogManager.hide(); // inicia fade-out visual do balão
+
+        setTimeout(() => {
+            currentMap = "quarto";
+            loadMap("mapa-quarto");
+
+            // Espera o novo mapa carregar antes de redesenhar o porquinho
+            assets.background.onload = () => {
+                resizeCanvas();
+                hidePig = false;
+                waitingWakeUpDismiss = false;
+            };
+        }, 400); // Espera o fade-out do balão terminar antes de mudar de mapa
     }
 
    if (currentMap === "shopping" && nearShoppingDoor) {
@@ -402,7 +489,7 @@ function update() {
         pig.isJumping = false;
     }
 
-    const internalMaps = ["shoppingInterno", "casinoInterno", "sala"];
+    const internalMaps = ["shoppingInterno", "casinoInterno"];
 
     if (!internalMaps.includes(currentMap)) {
         if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
@@ -485,6 +572,24 @@ function update() {
         }
     }
 
+    // Interação com a cama no quarto
+    if (currentMap === "quarto" && isNearCenter()) {
+        nearBed = true;
+        if (!dialogManager.active && !justClosedBedDialog) {
+            dialogManager.show(
+                "bedHint",
+                "Cama confortável!",
+                "Pressione 'E' para dormir."
+            );
+        }
+    } else {
+        nearBed = false;
+        interactedWithBed = false;
+        if (dialogManager.type === "bed" || dialogManager.type === "bedHint") {
+            dialogManager.hide();
+        }
+    }
+
     // Saída do shopping (lado esquerdo)
     if (currentMap === "shoppingInterno" && pig.x <= 100) {
         nearShoppingExit = true;
@@ -543,15 +648,17 @@ function draw() {
     ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
 
     // Desenhar personagem
-    ctx.save();
-    if (pig.direction === "left") {
-        ctx.translate(pig.x + pig.width, pig.y);
-        ctx.scale(-1, 1);
-        ctx.drawImage(assets.pig, 0, 0, pig.width, pig.height);
-    } else {
-        ctx.drawImage(assets.pig, pig.x, pig.y, pig.width, pig.height);
+    if (!hidePig) {
+        ctx.save();
+        if (pig.direction === "left") {
+            ctx.translate(pig.x + pig.width, pig.y);
+            ctx.scale(-1, 1);
+            ctx.drawImage(assets.pig, 0, 0, pig.width, pig.height);
+        } else {
+            ctx.drawImage(assets.pig, pig.x, pig.y, pig.width, pig.height);
+        }
+        ctx.restore();
     }
-    ctx.restore();
 
     // Desenha diálogo gerenciado pelo dialogManager
     dialogManager.draw(ctx, canvas);
@@ -591,13 +698,6 @@ function checkAllLoaded() {
         pig.x = (canvas.width - pig.width) / 2;
         pig.y = sidewalkY;
         gameLoop();
-    }
-}
-
-function updateMoneyDisplay() {
-    const moneyElement = document.getElementById("money");
-    if (moneyElement) {
-        moneyElement.textContent = `R$ ${playerMoney},00`;
     }
 }
 
