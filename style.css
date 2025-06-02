@@ -70,3 +70,25 @@ canvas{
     opacity: 1;
     transform: translateY(0);
 }
+
+#characterSelect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000e6; /* fundo escuro com transparência */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.selectable {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.selectable:hover {
+  transform: scale(1.1);
+}

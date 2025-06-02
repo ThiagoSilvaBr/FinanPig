@@ -1,17 +1,60 @@
 document.addEventListener("DOMContentLoaded", function () {
+    let chosenCharacter = "male"; //valor padrão
     const screen = document.getElementById("startScreen");
     const backToMenuButton = document.getElementById("backToMenu");
+    const characterSelect = document.getElementById("characterSelect");
 
     document.getElementById("startButton").addEventListener("click", function () {
-        screen.classList.add("fade-out"); // Adiciona a classe CSS fade-out (transição de opacidade)
+        screen.classList.add("fade-out");
         setTimeout(() => {
-            screen.style.display = "none"; // Esconde a tela completamente
-        }, 800); // Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
+            screen.style.display = "none";
+            characterSelect.style.display = "block"; // Mostra a tela de escolha
+        }, 800);
     });
 
-    backToMenuButton.addEventListener("click", function(){
+    const characterSprites = {
+        male: {
+            right: "./Imagens/Personagem/personagem-lateral-direita.png",
+            left: "./Imagens/Personagem/personagem-lateral-esquerda.png",
+        },
+        female: {
+            right: "./Imagens/Personagem/personagem-feminina-lateral-direita.png",
+        }
+    };
+
+    //logica de seleção de personagens 
+    document.getElementById("selectPigMale").addEventListener("click", function () {
+        chosenCharacter = "male";
+        startGame();
+    });
+
+    document.getElementById("selectPigFemale").addEventListener("click", function () {
+        chosenCharacter = "female";
+        startGame();
+    });
+
+    function startGame() {
+        characterSelect.style.display = "none";
+
+        if (chosenCharacter === "male") 
+            assets.pig.src = "./Imagens/Personagem/personagem-lateral-direita.png";
+        if (chosenCharacter === "female")
+            assets.pig.src = "./Imagens/Personagem/personagem-feminino-lateral-direita.png";
+        
+
+        // Começa o jogo com o mapa inicial e posiciona o personagem
+        pig.x = (canvas.width - pig.width) / 2;
+        pig.y = sidewalkY;
+        currentMap = "casa";
+        loadMap("mapa-casa");
+        resizeCanvas();
+    }
+
+
+    backToMenuButton.addEventListener("click", function () {
         screen.style.display = "flex";
-        screen.classList.remove("fade-out");  
+        screen.classList.remove("fade-out");
+        characterSelect.style.display = "none"; // ← Aqui
 
         pig.x = (canvas.width - pig.width) / 2; // Reposiciona o personagem no local de spawn original
         pig.y = sidewalkY;
@@ -29,7 +72,7 @@ const assets = {
     pig: new Image()
 };
 
-assets.pig.src = "./Imagens/Personagem/personagem-lateral-direita.png";
+
 
 function loadMap(mapName) {
     assets.background.src = `./Imagens/Mapas/${mapName}.png`;
@@ -58,7 +101,7 @@ const maps = {
     trabalho: { transitions: { left: "casa", right: "shopping" } },
     shopping: { transitions: { left: "trabalho", right: "casino" } },
     casino: { transitions: { left: "shopping" } },
-    shoppingInterno: { transitions: {} },  
+    shoppingInterno: { transitions: {} },
     casinoInterno: { transitions: {} },
     sala: { transitions: { right: "quarto" } },
     quarto: { transitions: { left: "sala" } }
@@ -95,7 +138,7 @@ function switchMap(direction) {
         loadMap(mapFileNames[currentMap]);
         resizeCanvas();
 
-        pig.x = direction === "right" ? 0 : canvas.width - pig.width;      
+        pig.x = direction === "right" ? 0 : canvas.width - pig.width;
         setTimeout(() => canSwitchMap = true, 300);
     }
 }
@@ -195,7 +238,7 @@ const dialogManager = {
         if (this.subtext) {
             ctx.font = "18px sans-serif";
             const lines = this.subtext.split("\n");
-            lines.forEach((line, index) =>{
+            lines.forEach((line, index) => {
                 ctx.fillText(line, centerX + 20, centerY + 90 + index * 25); // Configura espaço entre as linhas
             });
         }
@@ -219,7 +262,7 @@ function updateDayDisplay() {
 }
 
 // Função para calcular o centro do mapa, para posicionar o balão de interação de entrada aos mapas internos
-function isNearCenter(threshold = 0.06){
+function isNearCenter(threshold = 0.06) {
     const center = canvas.width / 2;
     const range = canvas.width * threshold;
     return pig.x + pig.width >= center - range && pig.x <= center + range;
@@ -255,7 +298,7 @@ function resetInteractionFlags() {
 document.addEventListener("keydown", e => {
     if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
 
-   // ESC fecha qualquer balão
+    // ESC fecha qualquer balão
     if (e.key === "Escape") {
         if (dialogManager.active) {
             const closedType = dialogManager.type;
@@ -306,159 +349,159 @@ document.addEventListener("keydown", e => {
     }
 
     if (event.key === "e" || event.key === "E") {
-    // Interação com limonada
-    if (currentMap === "casa" && nearLemonade) {
-        if (dialogManager.active && dialogManager.type === "lemonade") {
-            if (playerMoney >= 25) {
-                playerMoney -= 25;
-                updateMoneyDisplay();
-                updateDayDisplay();
-                dialogManager.show(
-                    "lemonadeSuccess",
-                    "Você comprou uma limonada!",
-                    "Refrescante! :)"
-                );
+        // Interação com limonada
+        if (currentMap === "casa" && nearLemonade) {
+            if (dialogManager.active && dialogManager.type === "lemonade") {
+                if (playerMoney >= 25) {
+                    playerMoney -= 25;
+                    updateMoneyDisplay();
+                    updateDayDisplay();
+                    dialogManager.show(
+                        "lemonadeSuccess",
+                        "Você comprou uma limonada!",
+                        "Refrescante! :)"
+                    );
+                } else {
+                    dialogManager.show(
+                        "lemonadeFail",
+                        "Você não tem dinheiro suficiente.",
+                        "A limonada custa 25 reais.\n"
+                    );
+                }
             } else {
                 dialogManager.show(
-                    "lemonadeFail",
-                    "Você não tem dinheiro suficiente.",
-                    "A limonada custa 25 reais.\n"
+                    "lemonade",
+                    "Gostaria de uma limonada geladinha por 25 reais?",
+                    "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar."
                 );
+                interactedWithLemonade = true;
             }
-        } else {
-            dialogManager.show(
-                "lemonade",
-                "Gostaria de uma limonada geladinha por 25 reais?",
-                "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar."
-            );
-            interactedWithLemonade = true;
         }
-    }
 
-    // Interação com a porta da casa para entrar
-    else if (currentMap === "casa" && nearDoor) {
-        if (dialogManager.active && dialogManager.type === "door") {
-            currentMap = "sala";
-            loadMap("mapa-sala");
-            resizeCanvas();
-            pig.x = canvas.width / 2 - pig.width / 2;
-            pig.y = sidewalkY;
-            dialogManager.hide();
-        } else {
-            dialogManager.show(
-                "door",
-                "Deseja entrar em casa?",
-                "'E' para entrar\n'ESC' para cancelar."
-            );
-            interactedWithDoor = true;
-        }
-    }
-
-    // Interação com a cama no quarto
-    if (currentMap === "quarto" && nearBed) {
-        if (dialogManager.active && dialogManager.type === "bed") {
-            // Antes de dormir, salva quanto dinheiro o jogador tem
-            moneyBeforeSleep = playerMoney;
-
-            // 20 reais de gastos diário
-            const dailyExpense = 20;
-            playerMoney = Math.max(0, playerMoney - dailyExpense);
-            updateMoneyDisplay();
-
-            assets.background.onload = () => {
+        // Interação com a porta da casa para entrar
+        else if (currentMap === "casa" && nearDoor) {
+            if (dialogManager.active && dialogManager.type === "door") {
+                currentMap = "sala";
+                loadMap("mapa-sala");
                 resizeCanvas();
+                pig.x = canvas.width / 2 - pig.width / 2;
+                pig.y = sidewalkY;
+                dialogManager.hide();
+            } else {
+                dialogManager.show(
+                    "door",
+                    "Deseja entrar em casa?",
+                    "'E' para entrar\n'ESC' para cancelar."
+                );
+                interactedWithDoor = true;
+            }
+        }
 
-                currentDay++;
-                updateDayDisplay();
-
-                const moneyAfterSleep = playerMoney;
-                const moneyLost = Math.max(0, moneyBeforeSleep - moneyAfterSleep);
-                const netEarned = moneyEarnedToday;
-
+        // Interação com a cama no quarto
+        if (currentMap === "quarto" && nearBed) {
+            if (dialogManager.active && dialogManager.type === "bed") {
+                // Antes de dormir, salva quanto dinheiro o jogador tem
                 moneyBeforeSleep = playerMoney;
-                moneyEarnedToday = 0; // Reseta para o próximo dia                
-                workedToday = false; // Permite trabalhar novamente ao acordar
 
-                dialogManager.show(
-                    "wakeUp",
-                    `Dia ${currentDay}!`,
-                    `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00, sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${netEarned - moneyLost},00\nPressione 'E' para levantar.`
-                );
-
-                hidePig = true;
-                waitingWakeUpDismiss = true;
-            };
-            currentMap = "quartoNoite";
-            loadMap("mapa-quarto-noite");
-        } else {
-            dialogManager.show(
-                "bed",
-                "Deseja dormir um pouco? 💤",
-                "'E' para dormir\n'ESC' para cancelar."
-            );
-            interactedWithBed = true;
-        }
-    }
-
-    // Se está na tela de "wakeUp", e o jogador pressiona E novamente
-    if (waitingWakeUpDismiss && dialogManager.active && dialogManager.type === "wakeUp") {
-        dialogManager.hide(); // inicia fade-out visual do balão
-
-        setTimeout(() => {
-            currentMap = "quarto";
-            loadMap("mapa-quarto");
-
-            // Espera o novo mapa carregar antes de redesenhar o porquinho
-            assets.background.onload = () => {
-                resizeCanvas();
-                hidePig = false;
-                waitingWakeUpDismiss = false;
-            };
-        }, 400); // Espera o fade-out do balão terminar antes de mudar de mapa
-    }
-
-    // Interação com o escritório no mapa trabalho
-    else if (currentMap === "trabalho" && nearOffice) {
-        if (workedToday) {
-            dialogManager.show(
-                "alreadyWorked",
-                "Você já trabalhou hoje!",
-                "Vá para casa descansar antes de trabalhar novamente."
-            );
-        } else if (dialogManager.active && dialogManager.type === "office") {
-            hidePig = true;
-            dialogManager.hide();
-            dialogManager.show("working", "No trabalho...", "...");
-            setTimeout(() => {
-                playerMoney += 50;
-                moneyEarnedToday += 50;
+                // 20 reais de gastos diário
+                const dailyExpense = 20;
+                playerMoney = Math.max(0, playerMoney - dailyExpense);
                 updateMoneyDisplay();
-                workedToday = true; // Marca como já trabalhou hoje
-                dialogManager.show(
-                    "endWork",
-                    "Fim do expediente!",
-                    "Você ganhou R$ 50,00!\nPressione 'ESC' para sair."
-                );
-            }, 2000); // Porquinho fica fora por 2 segundos
-        } else {
-            dialogManager.show(
-                "office",
-                "Deseja começar seu expediente no escritório?",
-                "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar."
-            );
-            interactedWithOffice = true;
-        }
-    }
 
-   if (currentMap === "shopping" && nearShoppingDoor) {
-            if(dialogManager.active && dialogManager.type === "shoppingDoor"){
+                assets.background.onload = () => {
+                    resizeCanvas();
+
+                    currentDay++;
+                    updateDayDisplay();
+
+                    const moneyAfterSleep = playerMoney;
+                    const moneyLost = Math.max(0, moneyBeforeSleep - moneyAfterSleep);
+                    const netEarned = moneyEarnedToday;
+
+                    moneyBeforeSleep = playerMoney;
+                    moneyEarnedToday = 0; // Reseta para o próximo dia                
+                    workedToday = false; // Permite trabalhar novamente ao acordar
+
+                    dialogManager.show(
+                        "wakeUp",
+                        `Dia ${currentDay}!`,
+                        `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00, sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${netEarned - moneyLost},00\nPressione 'E' para levantar.`
+                    );
+
+                    hidePig = true;
+                    waitingWakeUpDismiss = true;
+                };
+                currentMap = "quartoNoite";
+                loadMap("mapa-quarto-noite");
+            } else {
+                dialogManager.show(
+                    "bed",
+                    "Deseja dormir um pouco? 💤",
+                    "'E' para dormir\n'ESC' para cancelar."
+                );
+                interactedWithBed = true;
+            }
+        }
+
+        // Se está na tela de "wakeUp", e o jogador pressiona E novamente
+        if (waitingWakeUpDismiss && dialogManager.active && dialogManager.type === "wakeUp") {
+            dialogManager.hide(); // inicia fade-out visual do balão
+
+            setTimeout(() => {
+                currentMap = "quarto";
+                loadMap("mapa-quarto");
+
+                // Espera o novo mapa carregar antes de redesenhar o porquinho
+                assets.background.onload = () => {
+                    resizeCanvas();
+                    hidePig = false;
+                    waitingWakeUpDismiss = false;
+                };
+            }, 400); // Espera o fade-out do balão terminar antes de mudar de mapa
+        }
+
+        // Interação com o escritório no mapa trabalho
+        else if (currentMap === "trabalho" && nearOffice) {
+            if (workedToday) {
+                dialogManager.show(
+                    "alreadyWorked",
+                    "Você já trabalhou hoje!",
+                    "Vá para casa descansar antes de trabalhar novamente."
+                );
+            } else if (dialogManager.active && dialogManager.type === "office") {
+                hidePig = true;
+                dialogManager.hide();
+                dialogManager.show("working", "No trabalho...", "...");
+                setTimeout(() => {
+                    playerMoney += 50;
+                    moneyEarnedToday += 50;
+                    updateMoneyDisplay();
+                    workedToday = true; // Marca como já trabalhou hoje
+                    dialogManager.show(
+                        "endWork",
+                        "Fim do expediente!",
+                        "Você ganhou R$ 50,00!\nPressione 'ESC' para sair."
+                    );
+                }, 2000); // Porquinho fica fora por 2 segundos
+            } else {
+                dialogManager.show(
+                    "office",
+                    "Deseja começar seu expediente no escritório?",
+                    "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar."
+                );
+                interactedWithOffice = true;
+            }
+        }
+
+        if (currentMap === "shopping" && nearShoppingDoor) {
+            if (dialogManager.active && dialogManager.type === "shoppingDoor") {
                 currentMap = "shoppingInterno";
                 loadMap("mapa-shopping-interno");
                 resizeCanvas();
                 pig.x = canvas.width / 2 - pig.width / 2;
                 pig.y = sidewalkY;
                 dialogManager.hide();
-            }else{
+            } else {
                 dialogManager.show(
                     "shoppingDoor",
                     "Deseja entrar no shopping?",
