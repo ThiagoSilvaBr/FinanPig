@@ -54,10 +54,11 @@ let currentMap = "casa";
 let canSwitchMap = true;
 
 const maps = {
-    casa: { transitions: { right: "shopping" } },
-    shopping: { transitions: { left: "casa", right: "casino" } },
-    shoppingInterno: { transitions: {} },
+    casa: { transitions: { right: "trabalho" } },
+    trabalho: { transitions: { left: "casa", right: "shopping" } },
+    shopping: { transitions: { left: "trabalho", right: "casino" } },
     casino: { transitions: { left: "shopping" } },
+    shoppingInterno: { transitions: {} },  
     casinoInterno: { transitions: {} },
     sala: { transitions: { right: "quarto" } },
     quarto: { transitions: { left: "sala" } }
@@ -81,6 +82,7 @@ function switchMap(direction) {
 
         const mapFileNames = {
             casa: "mapa-casa",
+            trabalho: "mapa-trabalho",
             shopping: "mapa-shopping",
             shoppingInterno: "mapa-shopping-interno",
             casino: "mapa-cassino",
@@ -119,6 +121,11 @@ let justClosedBedDialog = false;
 let hidePig = false;
 let waitingWakeUpDismiss = false;
 
+let nearOffice = false;
+let interactedWithOffice = false;
+let justClosedOfficeDialog = false;
+let workedToday = false;
+
 let nearShoppingDoor = false;
 let nearShoppingExit = false;
 let interactedWithShoppingDoor = false;
@@ -130,6 +137,7 @@ let interactedWithCasinoDoor = false;
 let justClosedCasinoDoorDialog = false;
 
 let playerMoney = 100;
+let moneyEarnedToday = 0;
 let moneyBeforeSleep = 0;
 let currentDay = 1;
 
@@ -265,6 +273,19 @@ document.addEventListener("keydown", e => {
                     justClosedDoorDialog = true;
                     setTimeout(() => justClosedDoorDialog = false, 500);
                     break;
+                case "office":
+                    justClosedOfficeDialog = true;
+                    setTimeout(() => justClosedOfficeDialog = false, 500);
+                    break;
+                case "endWork":
+                    justClosedOfficeDialog = true;
+                    hidePig = false; // Personagem volta a aparecer
+                    setTimeout(() => justClosedOfficeDialog = false, 500);
+                    break;
+                case "alreadyWorked":
+                    justClosedOfficeDialog = true;
+                    setTimeout(() => justClosedOfficeDialog = false, 500);
+                    break;
                 case "shoppingDoor":
                 case "shoppingDoorHint":
                     justClosedShoppingDoorDialog = true;
@@ -339,18 +360,29 @@ document.addEventListener("keydown", e => {
             // Antes de dormir, salva quanto dinheiro o jogador tem
             moneyBeforeSleep = playerMoney;
 
+            // 20 reais de gastos diário
+            const dailyExpense = 20;
+            playerMoney = Math.max(0, playerMoney - dailyExpense);
+            updateMoneyDisplay();
+
             assets.background.onload = () => {
                 resizeCanvas();
 
                 currentDay++;
                 updateDayDisplay();
 
-                const moneyLost = Math.max(0, moneyBeforeSleep - playerMoney);
+                const moneyAfterSleep = playerMoney;
+                const moneyLost = Math.max(0, moneyBeforeSleep - moneyAfterSleep);
+                const netEarned = moneyEarnedToday;
+
+                moneyBeforeSleep = playerMoney;
+                moneyEarnedToday = 0; // Reseta para o próximo dia                
+                workedToday = false; // Permite trabalhar novamente ao acordar
 
                 dialogManager.show(
                     "wakeUp",
                     `Dia ${currentDay}!`,
-                    `Zzz... 💤\nDinheiro perdido: R$ ${moneyLost},00\nPressione 'E' para levantar.`
+                    `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00, sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${netEarned - moneyLost},00\nPressione 'E' para levantar.`
                 );
 
                 hidePig = true;
@@ -361,7 +393,7 @@ document.addEventListener("keydown", e => {
         } else {
             dialogManager.show(
                 "bed",
-                "Deseja dormir um pouco?",
+                "Deseja dormir um pouco? 💤",
                 "'E' para dormir\n'ESC' para cancelar."
             );
             interactedWithBed = true;
@@ -383,6 +415,39 @@ document.addEventListener("keydown", e => {
                 waitingWakeUpDismiss = false;
             };
         }, 400); // Espera o fade-out do balão terminar antes de mudar de mapa
+    }
+
+    // Interação com o escritório no mapa trabalho
+    else if (currentMap === "trabalho" && nearOffice) {
+        if (workedToday) {
+            dialogManager.show(
+                "alreadyWorked",
+                "Você já trabalhou hoje!",
+                "Vá para casa descansar antes de trabalhar novamente."
+            );
+        } else if (dialogManager.active && dialogManager.type === "office") {
+            hidePig = true;
+            dialogManager.hide();
+            dialogManager.show("working", "No trabalho...", "...");
+            setTimeout(() => {
+                playerMoney += 50;
+                moneyEarnedToday += 50;
+                updateMoneyDisplay();
+                workedToday = true; // Marca como já trabalhou hoje
+                dialogManager.show(
+                    "endWork",
+                    "Fim do expediente!",
+                    "Você ganhou R$ 50,00!\nPressione 'ESC' para sair."
+                );
+            }, 2000); // Porquinho fica fora por 2 segundos
+        } else {
+            dialogManager.show(
+                "office",
+                "Deseja começar seu expediente no escritório?",
+                "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar."
+            );
+            interactedWithOffice = true;
+        }
     }
 
    if (currentMap === "shopping" && nearShoppingDoor) {
@@ -532,6 +597,29 @@ function update() {
         nearDoor = false;
         interactedWithDoor = false;
         if (dialogManager.type === "door" || dialogManager.type === "doorHint") {
+            dialogManager.hide();
+        }
+    }
+
+    // Interação com escritório no mapa de trabalho
+    if (currentMap === "trabalho" && isNearCenter()) {
+        nearOffice = true;
+
+        if (!dialogManager.active && !justClosedOfficeDialog) {
+            dialogManager.show(
+                "officeHint",
+                "Escritório de Trabalho",
+                "Pressione 'E' para iniciar o expediente."
+            );
+        }
+    } else {
+        nearOffice = false;
+        interactedWithOffice = false;
+
+        if (dialogManager.type === "office" ||
+            dialogManager.type === "officeHint" ||
+            dialogManager.type === "alreadyWorked"
+        ) {
             dialogManager.hide();
         }
     }
