@@ -120,6 +120,8 @@ let nearCasinoExit = false;
 let interactedWithCasinoDoor = false;
 let justClosedCasinoDoorDialog = false;
 
+let playerMoney = 100;
+
 const dialogManager = {
     active: false,
     type: null,
@@ -248,35 +250,55 @@ document.addEventListener("keydown", e => {
         }
     }
 
-    if (e.key === "e" || e.key === "E") {
-        if (currentMap === "casa" && nearLemonade) {
+    if (event.key === "e" || event.key === "E") {
+    // Interação com limonada (requer confirmação)
+    if (currentMap === "casa" && nearLemonade) {
+        if (dialogManager.active && dialogManager.type === "lemonade") {
+            if (playerMoney >= 25) {
+                playerMoney -= 25;
+                updateMoneyDisplay();
+                dialogManager.show(
+                    "lemonadeSuccess",
+                    "Você comprou uma limonada!",
+                    "Refrescante! :)"
+                );
+            } else {
+                dialogManager.show(
+                    "lemonadeFail",
+                    "Você não tem dinheiro suficientes.",
+                    "A limonada custa 25 reais."
+                );
+            }
+        } else {
             dialogManager.show(
                 "lemonade",
-                "Gostaria de uma limonada geladinha por 25 moedas?",
-                "Pressione 'ESC' para fechar."
+                "Gostaria de uma limonada geladinha por 25 reais?",
+                "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar."
             );
             interactedWithLemonade = true;
         }
+    }
 
-        if (currentMap === "casa" && nearDoor) {
-            if (dialogManager.active && dialogManager.type === "door") {
-                // Na segunda vez que pressionar 'E' entra na casa
-                currentMap = "sala";
-                loadMap("mapa-sala");
-                resizeCanvas();
-                pig.x = canvas.width / 2 - pig.width / 2;
-                pig.y = sidewalkY;
-                dialogManager.hide();
-            } else {
-                dialogManager.show(
-                    "door",
-                    "Deseja entrar na casa?",
-                    "'E' para entrar\n'ESC' para cancelar."
-                );
-            }
+    // Interação com a porta da casa para ENTRAR (requer confirmação)
+    else if (currentMap === "casa" && nearDoor) {
+        if (dialogManager.active && dialogManager.type === "door") {
+            currentMap = "sala";
+            loadMap("mapa-sala");
+            resizeCanvas();
+            pig.x = canvas.width / 2 - pig.width / 2;
+            pig.y = sidewalkY;
+            dialogManager.hide();
+        } else {
+            dialogManager.show(
+                "door",
+                "Deseja entrar em casa?",
+                "'E' para entrar\n'ESC' para cancelar."
+            );
+            interactedWithDoor = true;
         }
+    }
 
-        if (currentMap === "shopping" && nearShoppingDoor) {
+   if (currentMap === "shopping" && nearShoppingDoor) {
             if(dialogManager.active && dialogManager.type === "shoppingDoor"){
                 currentMap = "shoppingInterno";
                 loadMap("mapa-shopping-interno");
@@ -565,6 +587,13 @@ function checkAllLoaded() {
         pig.x = (canvas.width - pig.width) / 2;
         pig.y = sidewalkY;
         gameLoop();
+    }
+}
+
+function updateMoneyDisplay() {
+    const moneyElement = document.getElementById("money");
+    if (moneyElement) {
+        moneyElement.textContent = `R$ ${playerMoney},00`;
     }
 }
 
