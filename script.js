@@ -68,25 +68,25 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const assets = {
-    background: new Image(),
-    pig: new Image()
+  background: new Image(),
+  pig: new Image(),
 };
 
 
 
 function loadMap(mapName) {
-    assets.background.src = `./Imagens/Mapas/${mapName}.png`;
+  assets.background.src = `./Imagens/Mapas/${mapName}.png`;
 }
 
 const pig = {
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 200,
-    speed: 4,
-    velocityY: 0,
-    isJumping: false,
-    direction: "right"
+  x: 0,
+  y: 0,
+  width: 200,
+  height: 200,
+  speed: 4,
+  velocityY: 0,
+  isJumping: false,
+  direction: "right",
 };
 
 const gravity = 0.5;
@@ -108,18 +108,17 @@ const maps = {
 };
 
 function resizeCanvas() {
-    const navbarHeight = document.getElementById("mainNavbar").offsetHeight;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - navbarHeight;
+  const navbarHeight = document.getElementById("mainNavbar").offsetHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight - navbarHeight;
 
-    // Ajusta dinamicamente a posição vertical da calçada a partir da altura da tela
-    sidewalkY = canvas.height - pig.height - (canvas.height * 0.18);
+  // Ajusta dinamicamente a posição vertical da calçada a partir da altura da tela
+  sidewalkY = canvas.height - pig.height - canvas.height * 0.18;
 }
 
 function switchMap(direction) {
     const nextMap = maps[currentMap].transitions[direction];
     if (nextMap && canSwitchMap) {
-        const previousMap = currentMap;
         currentMap = nextMap;
         canSwitchMap = false;
 
@@ -144,9 +143,9 @@ function switchMap(direction) {
 }
 
 const keys = {
-    ArrowUp: false,
-    ArrowLeft: false,
-    ArrowRight: false
+  ArrowUp: false,
+  ArrowLeft: false,
+  ArrowRight: false,
 };
 
 let nearLemonade = false;
@@ -185,55 +184,55 @@ let moneyBeforeSleep = 0;
 let currentDay = 1;
 
 const dialogManager = {
-    active: false,
-    type: null,
-    opacity: 0,
-    text: "",
-    subtext: "",
+  active: false,
+  type: null,
+  opacity: 0,
+  text: "",
+  subtext: "",
 
-    show(type, text, subtext = "") {
-        this.active = true;
-        this.type = type;
-        this.text = text;
-        this.subtext = subtext;
-    },
+  show(type, text, subtext = "") {
+    this.active = true;
+    this.type = type;
+    this.text = text;
+    this.subtext = subtext;
+  },
 
-    hide() {
-        this.active = false;
-        this.type = null;
-    },
+  hide() {
+    this.active = false;
+    this.type = null;
+  },
 
-    update() {
-        const target = this.active ? 1 : 0;
-        const speed = 0.1;
-        this.opacity += (target - this.opacity) * speed;
-        this.opacity = Math.max(0, Math.min(1, this.opacity));
-    },
+  update() {
+    const target = this.active ? 1 : 0;
+    const speed = 0.1;
+    this.opacity += (target - this.opacity) * speed;
+    this.opacity = Math.max(0, Math.min(1, this.opacity));
+  },
 
-    // Estilo do balão de interação (balão maior)
-    draw(ctx, canvas) {
-        if (this.opacity < 0.01) return;
+  // Estilo do balão de interação (balão maior)
+  draw(ctx, canvas) {
+    if (this.opacity < 0.01) return;
 
-        const boxWidth = Math.min(canvas.width * 0.8, 600);
-        const boxHeight = 200;
-        const centerX = canvas.width / 2 - boxWidth / 2;
-        const centerY = 10;
+    const boxWidth = Math.min(canvas.width * 0.8, 600);
+    const boxHeight = 200;
+    const centerX = canvas.width / 2 - boxWidth / 2;
+    const centerY = 10;
 
-        ctx.save();
-        ctx.globalAlpha = this.opacity;
-        ctx.translate(0, (1 - this.opacity) * -20);
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    ctx.translate(0, (1 - this.opacity) * -20);
 
-        ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
-        drawRoundedRect(centerX, centerY, boxWidth, boxHeight, 15);
-        ctx.fill();
+    ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
+    drawRoundedRect(centerX, centerY, boxWidth, boxHeight, 15);
+    ctx.fill();
 
-        ctx.strokeStyle = "rgb(80, 130, 70)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
+    ctx.strokeStyle = "rgb(80, 130, 70)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-        ctx.fillStyle = "white";
-        ctx.font = "20px sans-serif";
-        ctx.fillText(this.text, centerX + 20, centerY + 50);
+    ctx.fillStyle = "white";
+    ctx.font = "20px sans-serif";
+    ctx.fillText(this.text, centerX + 20, centerY + 50);
 
         if (this.subtext) {
             ctx.font = "18px sans-serif";
@@ -243,8 +242,8 @@ const dialogManager = {
             });
         }
 
-        ctx.restore();
-    }
+    ctx.restore();
+  },
 };
 
 function updateMoneyDisplay() {
@@ -387,6 +386,10 @@ document.addEventListener("keydown", e => {
                 pig.x = canvas.width / 2 - pig.width / 2;
                 pig.y = sidewalkY;
                 dialogManager.hide();
+                justClosedDoorDialog = true;
+                setTimeout(() => {
+                    justClosedDoorDialog = false;
+                }, 500);
             } else {
                 dialogManager.show(
                     "door",
@@ -519,11 +522,15 @@ document.addEventListener("keydown", e => {
                 pig.x = canvas.width / 2 - pig.width / 2;
                 pig.y = sidewalkY;
                 dialogManager.hide();
+                justClosedCasinoDoorDialog = true;
+                setTimeout(() => {
+                    justClosedCasinoDoorDialog = false;
+                }, 500);
             } else {
                 dialogManager.show(
                     "casinoDoor",
-                    "Deseja entrar no cassino?",
-                    "'E' para entrar\n'ESC' para cancelar."
+                    "Você deseja entrar no cassino?",
+                    "Pressione 'E' para fechar."
                 );
             }
         }
@@ -562,40 +569,40 @@ document.addEventListener("keydown", e => {
     }
 });
 
-document.addEventListener("keyup", e => {
-    if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
+document.addEventListener("keyup", (e) => {
+  if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
 });
 
 function update() {
-    let moveX = 0;
+  let moveX = 0;
 
-    if (keys.ArrowLeft) {
-        moveX -= pig.speed;
-        pig.direction = "left";
-    }
-    if (keys.ArrowRight) {
-        moveX += pig.speed;
-        pig.direction = "right";
-    }
+  if (keys.ArrowLeft) {
+    moveX -= pig.speed;
+    pig.direction = "left";
+  }
+  if (keys.ArrowRight) {
+    moveX += pig.speed;
+    pig.direction = "right";
+  }
 
-    pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
+  pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
 
-    // Pula
-    if (keys.ArrowUp && !pig.isJumping) {
-        pig.velocityY = jumpForce;
-        pig.isJumping = true;
-    }
+  // Pula
+  if (keys.ArrowUp && !pig.isJumping) {
+    pig.velocityY = jumpForce;
+    pig.isJumping = true;
+  }
 
-    // Física do pulo
-    pig.velocityY += gravity;
-    pig.y += pig.velocityY;
+  // Física do pulo
+  pig.velocityY += gravity;
+  pig.y += pig.velocityY;
 
-    // Para na calçada ao pular
-    if (pig.y >= sidewalkY) {
-        pig.y = sidewalkY;
-        pig.velocityY = 0;
-        pig.isJumping = false;
-    }
+  // Para na calçada ao pular
+  if (pig.y >= sidewalkY) {
+    pig.y = sidewalkY;
+    pig.velocityY = 0;
+    pig.isJumping = false;
+  }
 
     const internalMaps = ["shoppingInterno", "casinoInterno"];
 
@@ -626,8 +633,8 @@ function update() {
         }
     }
 
-    // Interação com a porta da casa
-    if (currentMap === "casa" && isNearCenter()) {
+    // Interação com a porta
+    if (currentMap === "casa" && pig.x >= 344 && pig.x <= 480) {
         nearDoor = true;
         if (!dialogManager.active && !justClosedDoorDialog) {
             dialogManager.show(
@@ -668,7 +675,7 @@ function update() {
     }
 
     // Interação com a porta do shopping
-    if (currentMap === "shopping" && isNearCenter()) {
+    if (currentMap === "shopping" && pig.x >= 280 && pig.x <= 464) {
         nearShoppingDoor = true;
         if (!dialogManager.active && !justClosedShoppingDoorDialog) {
             dialogManager.show(
@@ -686,7 +693,7 @@ function update() {
     }
 
     // Interação com a porta do cassino
-    if (currentMap === "casino" && isNearCenter()) {
+    if (currentMap === "casino" && pig.x >= 312 && pig.x <= 472) {
         nearCasinoDoor = true;
         if (!dialogManager.active && !justClosedCasinoDoorDialog) {
             dialogManager.show(
@@ -759,24 +766,24 @@ function update() {
 }
 
 function drawRoundedRect(x, y, width, height, radius) {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Desenhar fundo
-    ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
+  // Desenhar fundo
+  ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
 
     // Desenhar personagem
     if (!hidePig) {
@@ -791,50 +798,50 @@ function draw() {
         ctx.restore();
     }
 
-    // Desenha diálogo gerenciado pelo dialogManager
-    dialogManager.draw(ctx, canvas);
+  // Desenha diálogo gerenciado pelo dialogManager
+  dialogManager.draw(ctx, canvas);
 
-    // Estilo do HUD (interface gráfica)
-    const layoutWidth = 250;
-    const layoutHeight = 80;
-    const padding = 10;
+  // Estilo do HUD (interface gráfica)
+  const layoutWidth = 250;
+  const layoutHeight = 80;
+  const padding = 10;
 
-    ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
-    drawRoundedRect(padding, padding, layoutWidth, layoutHeight, 10);
-    ctx.fill();
+  ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
+  drawRoundedRect(padding, padding, layoutWidth, layoutHeight, 10);
+  ctx.fill();
 
-    ctx.strokeStyle = "rgb(80, 130, 70)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+  ctx.strokeStyle = "rgb(80, 130, 70)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-    ctx.fillStyle = "white";
-    ctx.font = "16px sans-serif";
-    ctx.fillText(`Mapa: ${currentMap}`, padding + 10, padding + 25);
-    ctx.fillText(`X: ${Math.round(pig.x)}`, padding + 10, padding + 45);
-    ctx.fillText(`Y: ${Math.round(pig.y)}`, padding + 10, padding + 65);
+  ctx.fillStyle = "white";
+  ctx.font = "16px sans-serif";
+  ctx.fillText(`Mapa: ${currentMap}`, padding + 10, padding + 25);
+  ctx.fillText(`X: ${Math.round(pig.x)}`, padding + 10, padding + 45);
+  ctx.fillText(`Y: ${Math.round(pig.y)}`, padding + 10, padding + 65);
 }
 
 function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
 }
 
 let assetsLoaded = 0;
 function checkAllLoaded() {
-    assetsLoaded++;
-    if (assetsLoaded === 2) {
-        resizeCanvas();
-        // Pig spawna na frente de casa
-        pig.x = (canvas.width - pig.width) / 2;
-        pig.y = sidewalkY;
-        gameLoop();
-    }
+  assetsLoaded++;
+  if (assetsLoaded === 2) {
+    resizeCanvas();
+    // Pig spawna na frente de casa
+    pig.x = (canvas.width - pig.width) / 2;
+    pig.y = sidewalkY;
+    gameLoop();
+  }
 }
 
 assets.background.onload = checkAllLoaded;
 assets.pig.onload = checkAllLoaded;
 
-loadMap('mapa-casa');
+loadMap("mapa-casa");
 
 window.addEventListener("resize", resizeCanvas);
