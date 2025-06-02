@@ -208,6 +208,12 @@ function updateMoneyDisplay() {
     const moneyElement = document.getElementById("money");
     if (moneyElement) {
         moneyElement.textContent = `R$ ${playerMoney},00`;
+
+        if (playerMoney < 0) {
+            moneyElement.style.color = "red";
+        } else {
+            moneyElement.style.color = ""; // Volta à cor padrão
+        }
     }
 }
 
@@ -377,7 +383,7 @@ document.addEventListener("keydown", e => {
             if (dialogManager.active && dialogManager.type === "bed") {
                 moneyBeforeSleep = playerMoney;
                 const dailyExpense = 20;
-                playerMoney = Math.max(0, playerMoney - dailyExpense);
+                playerMoney -= dailyExpense;
                 updateMoneyDisplay();
 
                 assets.background.onload = () => {
@@ -385,7 +391,7 @@ document.addEventListener("keydown", e => {
                     currentDay++;
                     updateDayDisplay();
                     const moneyAfterSleep = playerMoney;
-                    const moneyLost = Math.max(0, moneyBeforeSleep - moneyAfterSleep);
+                    const moneyLost = moneyBeforeSleep - moneyAfterSleep;
                     const netEarned = moneyEarnedToday;
 
                     moneyBeforeSleep = playerMoney;
