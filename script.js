@@ -265,8 +265,8 @@ document.addEventListener("keydown", e => {
             } else {
                 dialogManager.show(
                     "lemonadeFail",
-                    "Você não tem dinheiro suficientes.",
-                    "A limonada custa 25 reais."
+                    "Você não tem dinheiro suficiente.",
+                    "A limonada custa 25 reais.\n"
                 );
             }
         } else {
@@ -422,7 +422,11 @@ function update() {
     } else {
         nearLemonade = false;
         interactedWithLemonade = false;
-        if (dialogManager.type === "lemonade" || dialogManager.type === "lemonadeHint") {
+        if (dialogManager.type === "lemonade" ||
+            dialogManager.type === "lemonadeHint" ||
+            dialogManager.type === "lemonadeSuccess" ||
+            dialogManager.type === "lemonadeFail"
+        ) {
             dialogManager.hide();
         }
     }
@@ -482,7 +486,7 @@ function update() {
     }
 
     // Saída do shopping (lado esquerdo)
-    if (currentMap === "shoppingInterno" && pig.x <= 10) {
+    if (currentMap === "shoppingInterno" && pig.x <= 100) {
         nearShoppingExit = true;
         if (!dialogManager.active) {
             dialogManager.show("shoppingExitHint", "", "Pressione 'E' para sair do shopping");
@@ -493,7 +497,7 @@ function update() {
     }
 
     // Saída do cassino (lado esquerda)
-    if (currentMap === "casinoInterno" && pig.x <= 10) {
+    if (currentMap === "casinoInterno" && pig.x <= 100) {
         nearCasinoExit = true;
         if (!dialogManager.active) {
             dialogManager.show("casinoExitHint", "", "Pressione 'E' para sair do cassino");
@@ -504,7 +508,7 @@ function update() {
     }
 
     // Saída da sala (lado esquerdo)
-    if (currentMap === "sala" && pig.x <= 10) {
+    if (currentMap === "sala" && pig.x <= 100) {
         nearRoomExit = true;
         if (!dialogManager.active) {
             dialogManager.show("roomExitHint", "", "Pressione 'E' para sair da casa");
