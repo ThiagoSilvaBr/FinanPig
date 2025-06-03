@@ -2,7 +2,7 @@
     position: fixed;
     width: 100vw;
     height: 100vh;
-    background-image: url("./Imagens/Mapas/fundo-tela-inicial.png");
+    background-image: url("./imagens/mapas/fundo-tela-inicial.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
