@@ -2,19 +2,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const screen = document.getElementById("startScreen");
     const backToMenuButton = document.getElementById("backToMenu");
 
-    document.getElementById("startButton").addEventListener("click", function () {
+    document.getElementById("startButton").addEventListener("click", function () { // Função ao clicar no botão de iniciar jogo
         screen.classList.add("fade-out"); // Adiciona a classe CSS fade-out (transição de opacidade)
         setTimeout(() => {
             screen.style.display = "none"; // Esconde a tela completamente
         }, 800); // Tempo da transição para esconder a tela. O mesmo colocado no css (0.8s)
     });
 
-    backToMenuButton.addEventListener("click", function(){
+    backToMenuButton.addEventListener("click", function(){ // Função ao clicar no botão de voltar ao menu do jogo
         screen.style.display = "flex";
         screen.classList.remove("fade-out");  
 
         pig.x = (canvas.width - pig.width) / 2; // Reposiciona o personagem no local de spawn original
         pig.y = sidewalkY;
+
+        dialogManager.hide(); // Fecha qualquer balão de interação
+        hidePig = false; // Garante que o personagem irá respawnar
+        workedToday = false;
+
+        // Reseta o dinheiro e o dia do jogo
+        playerMoney = 100;
+        updateMoneyDisplay();
+        currentDay = 1;
+        updateDayDisplay();
+ 
         currentMap = "casa";
         loadMap("mapa-casa");
         resizeCanvas();
@@ -29,10 +40,10 @@ const assets = {
     pig: new Image()
 };
 
-assets.pig.src = "./Imagens/Personagem/personagem-lateral-direita.png";
+assets.pig.src = "./imagens/personagem/personagem-lateral-direita.png";
 
 function loadMap(mapName) {
-    assets.background.src = `./Imagens/Mapas/${mapName}.png`;
+    assets.background.src = `./imagens/mapas/${mapName}.png`;
 }
 
 const pig = {
@@ -40,7 +51,7 @@ const pig = {
     y: 0,
     width: 200,
     height: 200,
-    speed: 4,
+    speed: 6,
     velocityY: 0,
     isJumping: false,
     direction: "right"
@@ -137,8 +148,8 @@ let interactedWithCasinoDoor = false;
 let justClosedCasinoDoorDialog = false;
 
 let playerMoney = 100;
+let moneySpentToday = 0;
 let moneyEarnedToday = 0;
-let moneyBeforeSleep = 0;
 let currentDay = 1;
 
 const dialogManager = {
@@ -353,6 +364,7 @@ document.addEventListener("keydown", e => {
             if (dialogManager.active && dialogManager.type === "lemonade") {
                 if (playerMoney >= 25) {
                     playerMoney -= 25;
+                    moneySpentToday += 25;
                     updateMoneyDisplay();
                     updateDayDisplay();
                     dialogManager.show("lemonadeSuccess", "Você comprou uma limonada!", "Refrescante! :)");
@@ -380,25 +392,31 @@ document.addEventListener("keydown", e => {
         }
 
         if (currentMap === "quarto" && nearBed) {
-            if (dialogManager.active && dialogManager.type === "bed") {
-                moneyBeforeSleep = playerMoney;
-                const dailyExpense = 20;
-                playerMoney -= dailyExpense;
-                updateMoneyDisplay();
+            if (dialogManager.active && dialogManager.type === "bed") {      
+                const dailyExpense = 20;               
+                updateMoneyDisplay();      
 
                 assets.background.onload = () => {
                     resizeCanvas();
+
+                    playerMoney -= dailyExpense;
+                    moneySpentToday += dailyExpense; 
+                    updateMoneyDisplay();
+               
+                    const moneyLost = moneySpentToday;
+                    const netEarned = moneyEarnedToday;
+                    const dailyBalance = netEarned - moneyLost;
+
                     currentDay++;
                     updateDayDisplay();
-                    const moneyAfterSleep = playerMoney;
-                    const moneyLost = moneyBeforeSleep - moneyAfterSleep;
-                    const netEarned = moneyEarnedToday;
-
-                    moneyBeforeSleep = playerMoney;
                     moneyEarnedToday = 0;
+                    moneySpentToday = 0;
                     workedToday = false;
 
-                    dialogManager.show("wakeUp", `Dia ${currentDay}!`, `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00, sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${netEarned - moneyLost},00\nPressione 'E' para levantar.`);
+                    dialogManager.show(
+                        "wakeUp",
+                        `Dia ${currentDay}!`,
+                        `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00, sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${dailyBalance},00\nPressione 'E' para levantar.`);
                     hidePig = true;
                     waitingWakeUpDismiss = true;
                 };
