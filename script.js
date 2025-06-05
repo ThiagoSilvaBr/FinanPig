@@ -40,7 +40,7 @@ const assets = {
     pig: new Image()
 };
 
-assets.pig.src = "./imagens/personagem/personagem-lateral-direita.png";
+assets.pig.src = "./imagens/personagens/personagem-lateral-direita.png";
 
 function loadMap(mapName) {
     assets.background.src = `./imagens/mapas/${mapName}.png`;
