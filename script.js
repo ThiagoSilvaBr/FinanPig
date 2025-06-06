@@ -175,15 +175,12 @@ let nearShoppingExit = false;
 let interactedWithShoppingDoor = false;
 let justClosedShoppingDoorDialog = false;
 
- 
 let nearLeftShopItem = false;
 let interactedWithLeftShopItem = false;
 
- 
 let nearRightShopItem = false;
 let interactedWithRightShopItem = false;
 
- 
 let nearCasinoDoor = false;
 let nearCasinoExit = false;
 let interactedWithCasinoDoor = false;
@@ -327,6 +324,13 @@ function resetInteractionFlags() {
     nearRightShopItem = false;
 
  
+
+    interactedWithLeftShopItem = false;
+    nearLeftShopItem = false;
+
+    interactedWithRightShopItem = false;
+    nearRightShopItem = false;
+
     justClosedCasinoDoorDialog = false;
     interactedWithCasinoDoor = false;
     nearCasinoDoor = false;
@@ -610,6 +614,40 @@ document.addEventListener("keydown", e => {
 
 
  
+
+        if (currentMap === "shoppingInterno" && nearLeftShopItem) {
+            if (dialogManager.active && dialogManager.type === "leftShop") {
+                if (playerMoney >= 30) {
+                    playerMoney -= 30;
+                    moneySpentToday += 30;
+                    updateMoneyDisplay();
+                    dialogManager.show("leftShopSuccess", "Você comprou itens de Saúde e Higiene!", "Cuidado é tudo. :)");
+                } else {
+                    dialogManager.show("leftShopFail", "Dinheiro insuficiente!", "Os itens custam R$ 30,00.");
+                }
+            } else {
+                dialogManager.show("leftShop", "Comprar itens de Saúde e Higiene por R$ 30,00?", "'E' para confirmar\n'ESC' para cancelar.");
+                interactedWithLeftShopItem = true;
+            }
+        }
+
+        if (currentMap === "shoppingInterno" && nearRightShopItem) {
+            if (dialogManager.active && dialogManager.type === "rightShop") {
+                if (playerMoney >= 40) {
+                    playerMoney -= 40;
+                    moneySpentToday += 40;
+                    updateMoneyDisplay();
+                    dialogManager.show("rightShopSuccess", "Você comprou Mantimentos!", "Barriga cheia!");
+                } else {
+                    dialogManager.show("rightShopFail", "Dinheiro insuficiente!", "Os Mantimentos custam R$ 40,00.");
+                }
+            } else {
+                dialogManager.show("rightShop", "Comprar Mantimentos por R$ 40,00?", "'E' para confirmar\n'ESC' para cancelar.");
+                interactedWithRightShopItem = true;
+            }
+        }
+
+
         if (currentMap === "casino" && nearCasinoDoor) {
             if (dialogManager.active && dialogManager.type === "casinoDoor") {
                 currentMap = "casinoInterno";
@@ -713,6 +751,7 @@ function update() {
     }
 
  
+    // Condicionais para detectar proximidade com os itens/mapas
     // Condicionais para detectar proximidade com os itens/mapas
     // Interação com a limonada
     if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
@@ -835,6 +874,39 @@ function update() {
     }
 
  
+
+    // Balão de interação com a prateleira esquerda do shopping
+    if (currentMap === "shoppingInterno" && pig.x >= 101 && pig.x <= 200) {
+        nearLeftShopItem = true;
+        if(!dialogManager.active && !interactedWithLeftShopItem){
+            dialogManager.show(
+                "leftShopHint",
+                "Saúde e Higiene",
+                "Pressione 'E' para ver produtos de Saúde e Higiene por R$ 30,00"
+            );
+        }
+    } else if (dialogManager.type === "leftShopHint") {
+        nearLeftShopItem = false;
+        interactedWithLeftShopItem = false;
+        dialogManager.hide();
+    }
+
+    // Balão de interação com a prateleira direita do shopping
+    if (currentMap === "shoppingInterno" && pig.x + pig.width >= canvas.width - 350) {
+        nearRightShopItem = true;
+        if (!dialogManager.active && !interactedWithRightShopItem) {
+            dialogManager.show(
+                "rightShopHint",
+                "Mantimentos",
+                "Pressione 'E' para ver Mantimentos por R$ 40,00"
+            );
+        }
+    } else if (dialogManager.type === "rightShopHint") {
+        nearRightShopItem = false;
+        interactedWithRightShopItem = false;
+        dialogManager.hide();
+    }
+
     // Interação com a porta do cassino
     if (currentMap === "casino" && isNearCenter()) {
         nearCasinoDoor = true;
@@ -885,6 +957,7 @@ function update() {
     }
 
  
+    // Saída do cassino (lado esquerdo)
     // Saída do cassino (lado esquerdo)
     if (currentMap === "casinoInterno" && pig.x <= 100) {
         nearCasinoExit = true;
