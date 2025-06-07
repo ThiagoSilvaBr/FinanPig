@@ -70,3 +70,72 @@ canvas{
     opacity: 1;
     transform: translateY(0);
 }
+
+/* Cutscene */
+#cutscene-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: none;
+}
+
+#cutscene-image {
+  width: 100vw;  /* 80% da largura da tela */
+  height: auto; /* altura proporcional */
+  object-fit: contain;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* centraliza */
+}
+
+#fade-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  opacity: 1;
+  transition: opacity 1s;
+  z-index: 1001;
+}
+
+#cutscene-textbox {
+    position: absolute;
+    bottom: 5%;
+    left:50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 800px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 2px solid white;
+    border-radius: 10px;
+    color: white;
+    font-size: 18px;
+    z-index: 1002;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#cutscene-text {
+    margin: 0;
+    flex-grow: 1;
+}
+
+#skipCutscene {
+    background-color: #ce8056;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin-left: 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#skipCutscene:hover {
+  background-color: #b86e4a;
+}
