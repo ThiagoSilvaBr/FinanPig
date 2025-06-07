@@ -130,6 +130,9 @@ document.getElementById("startButton").addEventListener("click", () => {
 
   });
 });
+//Adicionando Caixa de Interação.
+const dialogueBoxImage = new Image();
+dialogueBoxImage.src = "./imagens/logos/dialogBoxImage.png";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -209,7 +212,7 @@ function switchMap(direction) {
       dialogManager.show(
         "warningDia4",
         "O tempo está acabando!",
-        "Você precisa juntar R$ 400,00 até o final do dia!\n\nPressione 'E' para continuar."
+        "Você precisa juntar R$ 400,00 \naté o final do dia!\n\nPressione 'E' para continuar"
       );
     }
 
@@ -292,52 +295,179 @@ const dialogManager = {
   },
 
   // Estilo do balão de interação (balão maior)
-  draw(ctx, canvas) {
-    if (this.opacity < 0.01) return;
+    draw(ctx, canvas) {
+        if (this.opacity < 0.01 || !dialogueBoxImage.complete || dialogueBoxImage.naturalWidth === 0) return;
 
-    const boxWidth = Math.min(canvas.width * 0.8, 600);
-    const boxHeight = 200;
+    const boxWidth = 700; // Largura da caixa, você pode ajustar se precisar
+    const paddingX = 60; // Aumentei um pouco a margem horizontal para o texto
+    const paddingY = 40; // Aumentei a margem vertical superior e inferior
+    const mainTextLineHeight = 30; // Ajustei um pouco a altura da linha para o texto principal
+    const subTextLineHeight = 30; // Ajustei a altura da linha para o subtexto
+    const spacingBetweenTexts = 30; // Espaçamento entre o texto principal e o subtexto
+
+    let currentCalculatedHeight = 0; // Usaremos para somar a altura total do conteúdo de texto
+
+    // --- 1. Calcular a Altura Necessária para o Texto Principal ---
+    ctx.font = "18px 'Press Start 2P', monospace";
+    const wrappedMainLines = wrapText(ctx, this.text, boxWidth - (paddingX * 2));
+    currentCalculatedHeight += wrappedMainLines.length * mainTextLineHeight;
+
+    // --- 2. Calcular a Altura Necessária para o Subtexto (se existir) ---
+    let wrappedSubLines = [];
+    if (this.subtext) {
+        // Adiciona o espaçamento entre o texto principal e o subtexto
+        currentCalculatedHeight += spacingBetweenTexts;
+
+        ctx.font = "12px 'Press Start 2P', monospace"; // Mude a fonte para o subtexto antes de medir
+        wrappedSubLines = wrapText(ctx, this.subtext, boxWidth - (paddingX * 2));
+        currentCalculatedHeight += wrappedSubLines.length * subTextLineHeight;
+    }
+
+    // --- 3. Definir a Altura Final da Caixa de Diálogo ---
+    // Adiciona o padding vertical à altura calculada do texto
+    // Aumentei a altura mínima para garantir que a caixa seja sempre maior.
+    const minBoxHeight = 400; // Aumentado para garantir uma caixa sempre maior
+    const dynamicBoxHeight = Math.max(minBoxHeight, currentCalculatedHeight + (paddingY * 2));
+
     const centerX = canvas.width / 2 - boxWidth / 2;
-    const centerY = 10;
+    // Posição Y da caixa: centralizar ela verticalmente na parte superior da tela ou ajustar
+    // Para a imagem que você mostrou, ela parece estar um pouco abaixo do topo, mas ainda na parte superior.
+    const centerY = 50; // Ajustado para descer um pouco a caixa se necessário.
 
     ctx.save();
     ctx.globalAlpha = this.opacity;
-    ctx.translate(0, (1 - this.opacity) * -20);
+    // Efeito de transição: a caixa desliza para cima enquanto a opacidade aumenta
+    ctx.translate(0, (1 - this.opacity) * -20); // Mantenha este efeito se quiser
 
-    ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
-    drawRoundedRect(centerX, centerY, boxWidth, boxHeight, 15);
-    ctx.fill();
+    // --- 4. Desenha a Imagem da Caixa com a Altura Dinâmica ---
+    ctx.drawImage(dialogueBoxImage, centerX, centerY, boxWidth, dynamicBoxHeight);
 
-    ctx.strokeStyle = "rgb(80, 130, 70)";
+    // --- 5. Preparar o Contexto para o Texto ---
+    ctx.textAlign = "center";
+    ctx.strokeStyle = "black";
     ctx.lineWidth = 2;
-    ctx.stroke();
-
     ctx.fillStyle = "white";
-    ctx.font = "20px sans-serif";
-    ctx.fillText(this.text, centerX + 20, centerY + 50);
 
+    // Posição X para o texto (centralizado dentro da caixa, considerando o padding)
+    const textX = centerX + boxWidth / 2;
+
+    // --- 6. Calcular a Posição Y Inicial do Texto Principal ---
+    // Este cálculo centraliza o bloco total de texto (principal + subtexto + espaçamento)
+    // verticalmente dentro da área de conteúdo da caixa (excluindo o paddingY).
+    let currentTextY = centerY + paddingY + (dynamicBoxHeight - (paddingY * 2) - currentCalculatedHeight) / 2;
+    // Adiciona o half-line height para o baseline do texto ficar no centro da primeira linha.
+    currentTextY += mainTextLineHeight / 2;
+
+
+    // --- 7. Desenhar o Texto Principal ---
+    ctx.font = "15px 'Press Start 2P', monospace"; // Reaplicar a fonte para o texto principal
+    wrappedMainLines.forEach((line, index) => {
+        const lineY = currentTextY + index * mainTextLineHeight;
+        ctx.strokeText(line, textX, lineY);
+        ctx.fillText(line, textX, lineY);
+    });
+
+    // --- 8. Desenhar o Subtexto (se existir) ---
     if (this.subtext) {
-      ctx.font = "18px sans-serif";
-      const lines = this.subtext.split("\n");
-      lines.forEach((line, index) => {
-        ctx.fillText(line, centerX + 20, centerY + 90 + index * 25); // Configura espaço entre as linhas
-      });
+        // Atualiza a posição Y para o subtexto, adicionando o espaçamento e a altura do texto principal
+        currentTextY += (wrappedMainLines.length * mainTextLineHeight) + spacingBetweenTexts;
+        // Ajusta o offset para a nova fonte (subtexto)
+        // Isso é para garantir que a baseline do subtexto esteja no centro da primeira linha do subtexto
+        currentTextY += (subTextLineHeight / 2) - (mainTextLineHeight / 2);
+
+        ctx.font = "12px 'Press Start 2P', monospace"; // Reaplicar a fonte para o subtexto
+        wrappedSubLines.forEach((line, index) => {
+            const lineY = currentTextY + index * subTextLineHeight;
+            ctx.strokeText(line, textX, lineY);
+            ctx.fillText(line, textX, lineY);
+        });
     }
 
     ctx.restore();
-  },
-};
+}
 
+// Mantenha a função wrapText como a última versão corrigida que eu te passei.
+// Certifique-se de que ela está DECLARADA FORA de qualquer outro método ou classe.
+}
+function wrapText(ctx, text, maxWidth) {
+    const lines = [];
+    let currentLine = '';
+
+    // Primeiro, vamos lidar com quebras de linha explícitas (se houver no texto original)
+    const paragraphs = text.split('\n'); // <-- ESTA LINHA É A CHAVE PARA O '\n'
+
+    paragraphs.forEach(para => {
+        const words = para.split(' ');
+        currentLine = ''; // Reinicia a linha para cada parágrafo
+
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            let testLine = '';
+
+            if (currentLine === '') {
+                testLine = word;
+            } else {
+                testLine = currentLine + ' ' + word;
+            }
+
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
+
+            if (testWidth > maxWidth) {
+                if (currentLine !== '') {
+                    lines.push(currentLine);
+                }
+                currentLine = word;
+
+                const wordMetrics = ctx.measureText(word);
+                if (wordMetrics.width > maxWidth) {
+                    let tempWord = '';
+                    for (let charIndex = 0; charIndex < word.length; charIndex++) {
+                        const char = word[charIndex];
+                        const tempTestLine = tempWord + char;
+                        const tempMetrics = ctx.measureText(tempTestLine);
+                        if (tempMetrics.width > maxWidth && tempWord !== '') {
+                            lines.push(tempWord);
+                            tempWord = char;
+                        } else {
+                            tempWord = tempTestLine;
+                        }
+                    }
+                    if (tempWord.length > 0) {
+                        lines.push(tempWord);
+                    }
+                    currentLine = '';
+                } else {
+                    currentLine = word;
+                }
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if (currentLine.length > 0) {
+            lines.push(currentLine);
+        }
+    });
+
+    return lines;
+}
 function updateMoneyDisplay() {
-  const moneyElement = document.getElementById("money");
-  if (moneyElement) {
-    moneyElement.textContent = `R$ ${playerMoney},00`;
+  const moneySpan = document.getElementById('money');
+  moneySpan.textContent = `R$ ${playerMoney.toFixed(2)}`;
 
-    if (playerMoney < 0) {
-      moneyElement.style.color = "red";
-    } else {
-      moneyElement.style.color = ""; // Volta à cor padrão
-    }
+  // Animação do texto
+  moneySpan.classList.add('moneyGain');
+  setTimeout(() => {
+    moneySpan.classList.remove('moneyGain');
+  }, 500);
+
+  // Animação do ícone
+  const moneyIcon = document.querySelector('.moneyIcon');
+  if (moneyIcon) {
+    moneyIcon.classList.add('moneyGain');
+    setTimeout(() => {
+      moneyIcon.classList.remove('moneyGain');
+    }, 500);
   }
 }
 
@@ -475,7 +605,7 @@ document.addEventListener("keydown", (e) => {
       dialogManager.show(
         "wakeUp",
         `Dia ${currentDay}!`,
-        `Pressione 'E' para levantar.`
+        `Pressione 'E' para levantar`
       );
 
       waitingWakeUpDismiss = true;
@@ -531,7 +661,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "lemonade",
           "Gostaria de uma limonada geladinha por 25 reais?",
-          "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar."
+          "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
         );
         interactedWithLemonade = true;
       }
@@ -547,7 +677,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "door",
           "Deseja entrar em casa?",
-          "'E' para entrar\n'ESC' para cancelar."
+          "'E' para entrar\n'ESC' para cancelar"
         );
         interactedWithDoor = true;
       }
@@ -578,7 +708,7 @@ document.addEventListener("keydown", (e) => {
           dialogManager.show(
             "wakeUp",
             `Dia ${currentDay}!`,
-            `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00, sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${dailyBalance},00\nPressione 'E' para levantar.`
+            `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00 \n sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${dailyBalance},00\nPressione 'E' para levantar`
           );
           hidePig = true;
           waitingWakeUpDismiss = true;
@@ -590,7 +720,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "bed",
           "Deseja dormir um pouco? 💤",
-          "'E' para dormir\n'ESC' para cancelar."
+          "'E' para dormir\n'ESC' para cancelar"
         );
         interactedWithBed = true;
       }
@@ -599,7 +729,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "alreadyWorked",
           "Você já trabalhou hoje!",
-          "Vá para casa descansar antes de trabalhar novamente."
+          "Vá para casa descansar antes de \ntrabalhar novamente."
         );
       } else if (dialogManager.active && dialogManager.type === "office") {
         hidePig = true;
@@ -613,14 +743,14 @@ document.addEventListener("keydown", (e) => {
           dialogManager.show(
             "endWork",
             "Fim do expediente!",
-            "Você ganhou R$ 50,00!\nPressione 'ESC' para sair."
+            "Você ganhou R$ 50,00!\nPressione 'ESC' para sair"
           );
         }, 2000);
       } else {
         dialogManager.show(
           "office",
           "Deseja começar seu expediente no escritório?",
-          "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar."
+          "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
         );
         interactedWithOffice = true;
       }
@@ -638,7 +768,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "shoppingDoor",
           "Deseja entrar no shopping?",
-          "'E' para entrar\n'ESC' para cancelar."
+          "'E' para entrar\n'ESC' para cancelar"
         );
         interactedWithShoppingDoor = true;
       }
@@ -666,7 +796,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "leftShop",
           "Comprar itens de Saúde e Higiene por R$ 30,00?",
-          "'E' para confirmar\n'ESC' para cancelar."
+          "'E' para confirmar\n'ESC' para cancelar"
         );
         interactedWithLeftShopItem = true;
       }
@@ -694,7 +824,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "rightShop",
           "Comprar Mantimentos por R$ 40,00?",
-          "'E' para confirmar\n'ESC' para cancelar."
+          "'E' para confirmar\n'ESC' para cancelar"
         );
         interactedWithRightShopItem = true;
       }
@@ -722,7 +852,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "leftShop",
           "Comprar itens de Saúde e Higiene por R$ 30,00?",
-          "'E' para confirmar\n'ESC' para cancelar."
+          "'E' para confirmar\n'ESC' para cancelar"
         );
         interactedWithLeftShopItem = true;
       }
@@ -750,7 +880,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "rightShop",
           "Comprar Mantimentos por R$ 40,00?",
-          "'E' para confirmar\n'ESC' para cancelar."
+          "'E' para confirmar\n'ESC' para cancelar"
         );
         interactedWithRightShopItem = true;
       }
@@ -768,7 +898,7 @@ document.addEventListener("keydown", (e) => {
         dialogManager.show(
           "casinoDoor",
           "Deseja entrar no cassino?",
-          "'E' para entrar\n'ESC' para cancelar."
+          "'E' para entrar\n'ESC' para cancelar"
         );
       }
     }
@@ -858,7 +988,7 @@ function update() {
       dialogManager.show(
         "lemonadeHint",
         "Barraquinha de Limonada!",
-        "Pressione 'E' para interagir."
+        "Pressione 'E' para interagir"
       );
     }
   } else {
@@ -881,7 +1011,7 @@ function update() {
       dialogManager.show(
         "doorHint",
         "Porta da Casa!",
-        "Pressione 'E' para interagir."
+        "Pressione 'E' para interagir"
       );
     }
   } else {
@@ -900,7 +1030,7 @@ function update() {
       dialogManager.show(
         "officeHint",
         "Escritório de Trabalho",
-        "Pressione 'E' para iniciar o expediente."
+        "Pressione 'E' para trabalhar"
       );
     }
   } else {
@@ -923,7 +1053,7 @@ function update() {
       dialogManager.show(
         "shoppingDoorHint",
         "Porta do shopping!",
-        "Pressione 'E' para interagir."
+        "Pressione 'E' para interagir"
       );
     }
   } else {
@@ -965,7 +1095,7 @@ function update() {
       dialogManager.show(
         "rightShopHint",
         "Mantimentos",
-        "Pressione 'E' para ver Mantimentos por R$ 40,00"
+        "Pressione 'E' para ver \nMantimentos por R$ 40,00"
       );
     }
   } else if (dialogManager.type === "rightShopHint") {
@@ -1016,7 +1146,7 @@ function update() {
       dialogManager.show(
         "casinoDoorHint",
         "Porta do Cassino!",
-        "Pressione 'E' para interagir."
+        "Pressione 'E' para interagir"
       );
     }
   } else {
@@ -1037,7 +1167,7 @@ function update() {
       dialogManager.show(
         "bedHint",
         "Cama confortável!",
-        "Pressione 'E' para dormir."
+        "Pressione 'E' para dormir"
       );
     }
   } else {
