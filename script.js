@@ -557,7 +557,10 @@ document.addEventListener("keyup", e => {
 });
 
 function update() {
-    let moveX = 0;
+    // Impede movimentação do personagem enquanto está no trabalho
+    if (dialogManager.type === "working") return;
+
+    let moveX = 0;  
 
     if (keys.ArrowLeft) {
         moveX -= pig.speed;
@@ -679,6 +682,7 @@ function update() {
     // Balão de interação com a prateleira esquerda do shopping
     if (currentMap === "shoppingInterno" && pig.x >= 101 && pig.x <= 200) {
         nearLeftShopItem = true;
+        // Se o balão de diálogo não está ativo e o jogador ainda não interagiu
         if(!dialogManager.active && !interactedWithLeftShopItem){
             dialogManager.show(
                 "leftShopHint",
@@ -686,10 +690,11 @@ function update() {
                 "Pressione 'E' para ver produtos de Saúde e Higiene por R$ 30,00"
             );
         }
+    // Se não está mais perto do item, mas o balão está visível
     } else if (dialogManager.type === "leftShopHint") {
-        nearLeftShopItem = false;
-        interactedWithLeftShopItem = false;
-        dialogManager.hide();
+        nearLeftShopItem = false; // Marca que o jogador saiu de perto do balão
+        interactedWithLeftShopItem = false; // Reseta interação
+        dialogManager.hide(); // Esconde o balão
     }
 
     // Balão de interação com a prateleira direita do shopping
