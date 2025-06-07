@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function () {
 const screen = document.getElementById("startScreen");
 const backToMenuButton = document.getElementById("backToMenu");
@@ -10,39 +9,39 @@ const skipButton = document.getElementById("skipCutscene");
 
 const cutsceneImages = [
   {
-    image: "./imagens/cutscenes/cena-inicial-1.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-1.png",
     text: "Pig nunca foi muito bom com dinheiro. Tudo que ganhava, gastava na mesma hora — doces, brinquedos, roupas novas…",
   },
   {
-    image: "./imagens/cutscenes/cena-inicial-2.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-2.png",
     text: "Para ele, o futuro era só uma ideia distante",
   },
   {
-    image: "./imagens/cutscenes/cena-inicial-3.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-3.png",
     text: "Criado em um lar humilde, sempre teve o essencial graças ao esforço incansável de sua mãe.",
   },
   {
-    image: "./imagens/cutscenes/cena-inicial-4.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-4.png",
     text: "Mas, sem perceber, Pig foi se afundando em dívidas e decisões impulsivas, colocando em risco o pouco que sua família tinha.",
   },
   {
-    image: "./imagens/cutscenes/cena-inicial-5.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-5.png",
     text: "Quando a situação ficou crítica, surgiu uma “ajuda” misteriosa: Lobo Lobato, um sujeito elegante, sorridente… e perigosamente convincente.",
   },
   {
-    image: "./imagens/cutscenes/cena-inicial-6.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-6.png",
     text: "Ele ofereceu empréstimos fáceis, um novo lar alugado e até ajudou Pig a conseguir um emprego. Tudo parecia estar se resolvendo.",
   },
   {
-    image: "./imagens/cutscenes/cena-inicial-7.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-7.png",
     text: "Mas era uma armadilha. O Lobo, desonesto como sempre, usou contratos enganosos e juros abusivos para sugar cada moeda que Pig tinha",
   },
   {
-    image: "./imagens/cutscenes/cena-inicial-8.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-8.png",
     text: "Em pouco tempo, Pig se viu preso a uma dívida gigante — e o Lobo deixou claro: se não pagar até o último centavo, perderá tudo.",
   },
   {
-    image: "./imagens/cutscenes/cena-inicial-9.png",
+    image: "./imagens/cutscenes/iniciais/cena-inicial-9.png",
     text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
   },
 ];
@@ -104,9 +103,7 @@ document.getElementById("startButton").addEventListener("click", () => {
   }, 800); // só esconde visualmente após o fade
 });
 
-  //-----------------------------------------------------
-
-    
+  //----------------------------------------------------- 
 
   backToMenuButton.addEventListener("click", function () {
     // Função ao clicar no botão de voltar ao menu do jogo
@@ -955,7 +952,7 @@ function update() {
   } else if (dialogManager.type === "leftShopHint") {
     nearLeftShopItem = false; // Marca que o jogador saiu de perto do balão
     interactedWithLeftShopItem = false; // Reseta interação
-    dialogManager.hide(); // Esconde o balão
+    dialogManager.hide(); // Fecha balão
   }
 
   // Balão de interação com a prateleira direita do shopping
