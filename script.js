@@ -139,6 +139,8 @@ const ctx = canvas.getContext("2d");
 const assets = {
   background: new Image(),
   pig: new Image(),
+  background: new Image(),
+  pig: new Image(),
 };
 
 assets.pig.src = "./imagens/personagens/personagem-lateral-direita.png";
@@ -180,7 +182,12 @@ function resizeCanvas() {
   const navbarHeight = document.getElementById("mainNavbar").offsetHeight;
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight - navbarHeight;
+  const navbarHeight = document.getElementById("mainNavbar").offsetHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight - navbarHeight;
 
+  // Ajusta dinamicamente a posição vertical da calçada a partir da altura da tela
+  sidewalkY = canvas.height - pig.height - canvas.height * 0.18;
   // Ajusta dinamicamente a posição vertical da calçada a partir da altura da tela
   sidewalkY = canvas.height - pig.height - canvas.height * 0.18;
 }
@@ -221,6 +228,9 @@ function switchMap(direction) {
 }
 
 const keys = {
+  ArrowUp: false,
+  ArrowLeft: false,
+  ArrowRight: false,
   ArrowUp: false,
   ArrowLeft: false,
   ArrowRight: false,
@@ -273,7 +283,18 @@ const dialogManager = {
   opacity: 0,
   text: "",
   subtext: "",
+  active: false,
+  type: null,
+  opacity: 0,
+  text: "",
+  subtext: "",
 
+  show(type, text, subtext = "") {
+    this.active = true;
+    this.type = type;
+    this.text = text;
+    this.subtext = subtext;
+  },
   show(type, text, subtext = "") {
     this.active = true;
     this.type = type;
@@ -285,7 +306,17 @@ const dialogManager = {
     this.active = false;
     this.type = null;
   },
+  hide() {
+    this.active = false;
+    this.type = null;
+  },
 
+  update() {
+    const target = this.active ? 1 : 0;
+    const speed = 0.1;
+    this.opacity += (target - this.opacity) * speed;
+    this.opacity = Math.max(0, Math.min(1, this.opacity));
+  },
   update() {
     const target = this.active ? 1 : 0;
     const speed = 0.1;
@@ -296,7 +327,14 @@ const dialogManager = {
   // Estilo do balão de interação (balão maior)
   draw(ctx, canvas) {
     if (this.opacity < 0.01) return;
+  // Estilo do balão de interação (balão maior)
+  draw(ctx, canvas) {
+    if (this.opacity < 0.01) return;
 
+    const boxWidth = Math.min(canvas.width * 0.8, 600);
+    const boxHeight = 200;
+    const centerX = canvas.width / 2 - boxWidth / 2;
+    const centerY = 10;
     const boxWidth = Math.min(canvas.width * 0.8, 600);
     const boxHeight = 200;
     const centerX = canvas.width / 2 - boxWidth / 2;
@@ -305,7 +343,13 @@ const dialogManager = {
     ctx.save();
     ctx.globalAlpha = this.opacity;
     ctx.translate(0, (1 - this.opacity) * -20);
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    ctx.translate(0, (1 - this.opacity) * -20);
 
+    ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
+    drawRoundedRect(centerX, centerY, boxWidth, boxHeight, 15);
+    ctx.fill();
     ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
     drawRoundedRect(centerX, centerY, boxWidth, boxHeight, 15);
     ctx.fill();
@@ -313,7 +357,13 @@ const dialogManager = {
     ctx.strokeStyle = "rgb(80, 130, 70)";
     ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.strokeStyle = "rgb(80, 130, 70)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
+    ctx.fillStyle = "white";
+    ctx.font = "20px sans-serif";
+    ctx.fillText(this.text, centerX + 20, centerY + 50);
     ctx.fillStyle = "white";
     ctx.font = "20px sans-serif";
     ctx.fillText(this.text, centerX + 20, centerY + 50);
@@ -326,6 +376,8 @@ const dialogManager = {
       });
     }
 
+    ctx.restore();
+  },
     ctx.restore();
   },
 };
@@ -808,9 +860,12 @@ document.addEventListener("keydown", (e) => {
 
 document.addEventListener("keyup", (e) => {
   if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
+document.addEventListener("keyup", (e) => {
+  if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
 });
 
 function update() {
+  let moveX = 0;
   let moveX = 0;
 
   if (keys.ArrowLeft) {
@@ -821,9 +876,23 @@ function update() {
     moveX += pig.speed;
     pig.direction = "right";
   }
+  if (keys.ArrowLeft) {
+    moveX -= pig.speed;
+    pig.direction = "left";
+  }
+  if (keys.ArrowRight) {
+    moveX += pig.speed;
+    pig.direction = "right";
+  }
 
   pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
+  pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
 
+  // Pula
+  if (keys.ArrowUp && !pig.isJumping) {
+    pig.velocityY = jumpForce;
+    pig.isJumping = true;
+  }
   // Pula
   if (keys.ArrowUp && !pig.isJumping) {
     pig.velocityY = jumpForce;
@@ -833,7 +902,16 @@ function update() {
   // Física do pulo
   pig.velocityY += gravity;
   pig.y += pig.velocityY;
+  // Física do pulo
+  pig.velocityY += gravity;
+  pig.y += pig.velocityY;
 
+  // Para na calçada ao pular
+  if (pig.y >= sidewalkY) {
+    pig.y = sidewalkY;
+    pig.velocityY = 0;
+    pig.isJumping = false;
+  }
   // Para na calçada ao pular
   if (pig.y >= sidewalkY) {
     pig.y = sidewalkY;
@@ -1103,11 +1181,25 @@ function drawRoundedRect(x, y, width, height, radius) {
   ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x, y, x + radius, y);
   ctx.closePath();
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
 }
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Desenhar fundo
+  ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
   // Desenhar fundo
   ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
 
@@ -1126,7 +1218,13 @@ function draw() {
 
   // Desenha diálogo gerenciado pelo dialogManager
   dialogManager.draw(ctx, canvas);
+  // Desenha diálogo gerenciado pelo dialogManager
+  dialogManager.draw(ctx, canvas);
 
+  // Estilo do HUD (interface gráfica)
+  const layoutWidth = 250;
+  const layoutHeight = 80;
+  const padding = 10;
   // Estilo do HUD (interface gráfica)
   const layoutWidth = 250;
   const layoutHeight = 80;
@@ -1135,7 +1233,13 @@ function draw() {
   ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
   drawRoundedRect(padding, padding, layoutWidth, layoutHeight, 10);
   ctx.fill();
+  ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
+  drawRoundedRect(padding, padding, layoutWidth, layoutHeight, 10);
+  ctx.fill();
 
+  ctx.strokeStyle = "rgb(80, 130, 70)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
   ctx.strokeStyle = "rgb(80, 130, 70)";
   ctx.lineWidth = 2;
   ctx.stroke();
@@ -1145,9 +1249,17 @@ function draw() {
   ctx.fillText(`Mapa: ${currentMap}`, padding + 10, padding + 25);
   ctx.fillText(`X: ${Math.round(pig.x)}`, padding + 10, padding + 45);
   ctx.fillText(`Y: ${Math.round(pig.y)}`, padding + 10, padding + 65);
+  ctx.fillStyle = "white";
+  ctx.font = "16px sans-serif";
+  ctx.fillText(`Mapa: ${currentMap}`, padding + 10, padding + 25);
+  ctx.fillText(`X: ${Math.round(pig.x)}`, padding + 10, padding + 45);
+  ctx.fillText(`Y: ${Math.round(pig.y)}`, padding + 10, padding + 65);
 }
 
 function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
   update();
   draw();
   requestAnimationFrame(gameLoop);
@@ -1163,11 +1275,20 @@ function checkAllLoaded() {
     pig.y = sidewalkY;
     gameLoop();
   }
+  assetsLoaded++;
+  if (assetsLoaded === 2) {
+    resizeCanvas();
+    // Pig spawna na frente de casa
+    pig.x = (canvas.width - pig.width) / 2;
+    pig.y = sidewalkY;
+    gameLoop();
+  }
 }
 
 assets.background.onload = checkAllLoaded;
 assets.pig.onload = checkAllLoaded;
 
+loadMap("mapa-casa");
 loadMap("mapa-casa");
 
 window.addEventListener("resize", resizeCanvas);
