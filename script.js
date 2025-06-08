@@ -227,6 +227,9 @@ let nearRoomExit = false;
 let interactedWithDoor = false;
 let justClosedDoorDialog = false;
 
+let nearBoss = false;
+let specialHouse = false;
+
 let nearBed = false;
 let interactedWithBed = false;
 let justClosedBedDialog = false;
@@ -289,7 +292,7 @@ const dialogManager = {
     draw(ctx, canvas) {
         if (this.opacity < 0.01 || !dialogueBoxImage.complete || dialogueBoxImage.naturalWidth === 0) return;
 
-    const boxWidth = 700; // Largura da caixa, você pode ajustar se precisar
+    const boxWidth = 600; // Largura da caixa, você pode ajustar se precisar
     const paddingX = 60; // Aumentei um pouco a margem horizontal para o texto
     const paddingY = 40; // Aumentei a margem vertical superior e inferior
     const mainTextLineHeight = 30; // Ajustei um pouco a altura da linha para o texto principal
@@ -320,7 +323,7 @@ const dialogManager = {
     const minBoxHeight = 400; // Aumentado para garantir uma caixa sempre maior
     const dynamicBoxHeight = Math.max(minBoxHeight, currentCalculatedHeight + (paddingY * 2));
 
-    const centerX = canvas.width / 2 - boxWidth / 2;
+    const centerX = canvas.width / 2 - boxWidth / 2 + 10; // Move 10px do centro à direita
     // Posição Y da caixa: centralizar ela verticalmente na parte superior da tela ou ajustar
     // Para a imagem que você mostrou, ela parece estar um pouco abaixo do topo, mas ainda na parte superior.
     const centerY = 50; // Ajustado para descer um pouco a caixa se necessário.
@@ -340,7 +343,7 @@ const dialogManager = {
     ctx.fillStyle = "white";
 
     // Posição X para o texto (centralizado dentro da caixa, considerando o padding)
-    const textX = centerX + boxWidth / 2;
+    const textX = centerX + boxWidth / 2 - 15;
 
     // --- 6. Calcular a Posição Y Inicial do Texto Principal ---
     // Este cálculo centraliza o bloco total de texto (principal + subtexto + espaçamento)
@@ -442,6 +445,7 @@ function wrapText(ctx, text, maxWidth) {
 
     return lines;
 }
+
 function updateMoneyDisplay() {
   const moneySpan = document.getElementById('money');
   moneySpan.textContent = `R$ ${playerMoney.toFixed(2)}`;
@@ -476,7 +480,7 @@ function isNearCenter(threshold = 0.06) {
   return pig.x + pig.width >= center - range && pig.x <= center + range;
 }
 
-// Função para evitar bug de não conseguir entrar mais de uma vez nos mapas internos
+// Função para evitar bug de não conseguir entrar mais de uma vez nos mapas internos, dentre outros bugs
 function resetInteractionFlags() {
   justClosedLemonadeDialog = false;
   interactedWithLemonade = false;
@@ -970,7 +974,13 @@ function update() {
     if (pig.x <= 10) switchMap("left");
   }
 
-  // Condicionais para detectar proximidade com os itens/mapas
+  // Carregar o mapa especial para o último dia
+  if (currentMap === "casa" && currentDay === 5 && !nearBoss) {
+    loadMap("mapa-casa-final");
+    resizeCanvas();
+    specialHouse = true;
+  }
+
   // Condicionais para detectar proximidade com os itens/mapas
   // Interação com a limonada
   if (currentMap === "casa" && pig.x >= 30 && pig.x <= 250) {
@@ -1011,6 +1021,25 @@ function update() {
     if (dialogManager.type === "door" || dialogManager.type === "doorHint") {
       dialogManager.hide();
     }
+  }
+
+  // Interagir com o Boss no dia final
+  if (
+    currentMap === "casa" &&
+    currentDay === 5 &&
+    pig.x + pig.width >= canvas.width - 300
+  ) {
+    nearBoss = true;
+    if (!dialogManager.active){
+      dialogManager.show(
+        "finalBossHint",
+        "Lobo Lobato te espera...",
+        "Pressione 'E' para interagir"
+      );
+    }
+  } else if (dialogManager.type === "finalBossHint") {
+    nearBoss = false;
+    dialogManager.hide();
   }
 
   // Interação com escritório no mapa de trabalho
@@ -1066,7 +1095,7 @@ function update() {
       dialogManager.show(
         "leftShopHint",
         "Saúde e Higiene",
-        "Pressione 'E' para ver produtos de Saúde e Higiene por R$ 30,00"
+        "Pressione 'E' para ver produtos\n de Saúde e Higiene por R$ 30,00"
       );
     }
     // Se não está mais perto do item, mas o balão está visível
