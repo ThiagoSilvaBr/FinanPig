@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
       currentTimeout2 = setTimeout(() => {
         showNextImage();
       }, 4500);
-    }, 1000);
+    }, 500);
   }
 
   function playCutscene() {
@@ -120,9 +120,10 @@ document.addEventListener("DOMContentLoaded", function () {
     resizeCanvas();
   });
 });
+
 //Adicionando Caixa de Interação.
 const dialogueBoxImage = new Image();
-dialogueBoxImage.src = "./imagens/logos/dialogBoxImage.png";
+dialogueBoxImage.src = "./imagens/logos/dialog-box-image.png";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
