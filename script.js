@@ -8,79 +8,79 @@ document.addEventListener("DOMContentLoaded", function () {
   const cutsceneText = document.getElementById("cutscene-text");
   const fadeOverlay = document.getElementById("fade-overlay");
   const skipButton = document.getElementById("skipCutscene");
-
+  
   const cutsceneImages = [
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-1.png",
-      text: "Pig nunca foi muito bom com dinheiro. Tudo que ganhava, gastava na mesma hora — doces, brinquedos, roupas novas…",
-    },
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-2.png",
-      text: "Para ele, o futuro era só uma ideia distante",
-    },
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-3.png",
-      text: "Criado em um lar humilde, sempre teve o essencial graças ao esforço incansável de sua mãe.",
-    },
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-4.png",
-      text: "Mas, sem perceber, Pig foi se afundando em dívidas e decisões impulsivas, colocando em risco o pouco que sua família tinha.",
-    },
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-5.png",
-      text: "Quando a situação ficou crítica, surgiu uma “ajuda” misteriosa: Lobo Lobato, um sujeito elegante, sorridente… e perigosamente convincente.",
-    },
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-6.png",
-      text: "Ele ofereceu empréstimos fáceis, um novo lar alugado e até ajudou Pig a conseguir um emprego. Tudo parecia estar se resolvendo.",
-    },
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-7.png",
-      text: "Mas era uma armadilha. O Lobo, desonesto como sempre, usou contratos enganosos e juros abusivos para sugar cada moeda que Pig tinha",
-    },
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-8.png",
-      text: "Em pouco tempo, Pig se viu preso a uma dívida gigante — e o Lobo deixou claro: se não pagar até o último centavo, perderá tudo.",
-    },
-    {
-      image: "./imagens/cutscenes/iniciais/cena-inicial-9.png",
-      text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
-    },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-1.png",
+    text: "Pig nunca foi muito bom com dinheiro. Tudo que ganhava, gastava na mesma hora — doces, brinquedos, roupas novas…",
+  },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-2.png",
+    text: "Para ele, o futuro era só uma ideia distante",
+  },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-3.png",
+    text: "Criado em um lar humilde, sempre teve o essencial graças ao esforço incansável de sua mãe.",
+  },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-4.png",
+    text: "Mas, sem perceber, Pig foi se afundando em dívidas e decisões impulsivas, colocando em risco o pouco que sua família tinha.",
+  },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-5.png",
+    text: "Quando a situação ficou crítica, surgiu uma “ajuda” misteriosa: Lobo Lobato, um sujeito elegante, sorridente… e perigosamente convincente.",
+  },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-6.png",
+    text: "Ele ofereceu empréstimos fáceis, um novo lar alugado e até ajudou Pig a conseguir um emprego. Tudo parecia estar se resolvendo.",
+  },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-7.png",
+    text: "Mas era uma armadilha. O Lobo, desonesto como sempre, usou contratos enganosos e juros abusivos para sugar cada moeda que Pig tinha",
+  },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-8.png",
+    text: "Em pouco tempo, Pig se viu preso a uma dívida gigante — e o Lobo deixou claro: se não pagar até o último centavo, perderá tudo.",
+  },
+  {
+    image: "./imagens/cutscenes/iniciais/cena-inicial-9.png",
+    text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
+  },
   ];
-
+  
   let index = 0;
   let skip = false;
   let currentTimeout1, currentTimeout2;
-
+  
   function showNextImage() {
     if (skip || index >= cutsceneImages.length) {
       cutsceneContainer.style.display = "none";
       startGame();
       return;
     }
-
+    
     const scene = cutsceneImages[index];
     fadeOverlay.style.opacity = 1;
-
+    
     currentTimeout1 = setTimeout(() => {
       cutsceneImage.src = scene.image;
       cutsceneText.textContent = scene.text;
       fadeOverlay.style.opacity = 0;
       index++;
-
+      
       currentTimeout2 = setTimeout(() => {
         showNextImage();
       }, 4500);
     }, 500);
   }
-
+  
   function playCutscene() {
     index = 0;
     skip = false;
     cutsceneContainer.style.display = "block";
     showNextImage();
   }
-
+  
   skipButton.addEventListener("click", () => {
     skip = true;
     clearTimeout(currentTimeout1);
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
     startGame();
     audioManager.playMusic(currentMap);
   });
-
+  
   document.getElementById("startButton").addEventListener("click", () => {
     playCutscene();
     document.getElementById("startScreen").classList.add("fade-out");
@@ -98,23 +98,23 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("startScreen").style.display = "none";
     }, 800);
   });
-
+  
   backToMenuButton.addEventListener("click", function () {
     screen.style.display = "flex";
     screen.classList.remove("fade-out");
-
+    
     pig.x = (canvas.width - pig.width) / 2;
     pig.y = sidewalkY;
-
+    
     dialogManager.hide();
     hidePig = false;
     workedToday = false;
-
+    
     playerMoney = 100;
     updateMoneyDisplay();
     currentDay = 1;
     updateDayDisplay();
-
+    
     currentMap = "casa";
     loadMap("mapa-casa");
     resizeCanvas();
@@ -172,7 +172,7 @@ function resizeCanvas() {
   const navbarHeight = document.getElementById("mainNavbar").offsetHeight;
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight - navbarHeight;
-
+  
   // Ajusta dinamicamente a posição vertical da calçada a partir da altura da tela
   sidewalkY = canvas.height - pig.height - canvas.height * 0.18;
 }
@@ -183,7 +183,7 @@ function switchMap(direction) {
     const previousMap = currentMap;
     currentMap = nextMap;
     canSwitchMap = false;
-
+    
     const mapFileNames = {
       casa: "mapa-casa",
       trabalho: "mapa-trabalho",
@@ -194,19 +194,19 @@ function switchMap(direction) {
       sala: "mapa-sala",
       quarto: "mapa-quarto",
     };
-
+    
     loadMap(mapFileNames[currentMap]);
     resizeCanvas();
-
+    
     audioManager.playMusic(currentMap);
     if (nextMap === "sala" && currentDay === 4) {
       dialogManager.show(
-        "warningDia4",
-        "O tempo está acabando!",
-        "Você precisa juntar R$ 400,00 \naté o final do dia!\n\nPressione 'E' para continuar"
+      "warningDia4",
+      "O tempo está acabando!",
+      "Você precisa juntar R$ 400,00 \naté o final do dia!\n\nPressione 'E' para continuar"
       );
     }
-
+    
     pig.x = direction === "right" ? 0 : canvas.width - pig.width;
     setTimeout(() => (canSwitchMap = true), 300);
   }
@@ -262,32 +262,38 @@ let moneySpentToday = 0;
 let moneyEarnedToday = 0;
 let currentDay = 1;
 
+let nearSlotMachine = false;
+let interactedWithSlotMachine = false;
+
+let currentSlotResults = [];
+let showSlotResults = false;
+
 const dialogManager = {
   active: false,
   type: null,
   opacity: 0,
   text: "",
   subtext: "",
-
+  
   show(type, text, subtext = "") {
     this.active = true;
     this.type = type;
     this.text = text;
     this.subtext = subtext;
   },
-
+  
   hide() {
     this.active = false;
     this.type = null;
   },
-
+  
   update() {
     const target = this.active ? 1 : 0;
     const speed = 0.1;
     this.opacity += (target - this.opacity) * speed;
     this.opacity = Math.max(0, Math.min(1, this.opacity));
   },
-
+  
   // Estilo do balão de interação (balão maior)
     draw(ctx, canvas) {
         if (this.opacity < 0.01 || !dialogueBoxImage.complete || dialogueBoxImage.naturalWidth === 0) return;
@@ -298,25 +304,25 @@ const dialogManager = {
     const mainTextLineHeight = 30; // Ajustei um pouco a altura da linha para o texto principal
     const subTextLineHeight = 30; // Ajustei a altura da linha para o subtexto
     const spacingBetweenTexts = 30; // Espaçamento entre o texto principal e o subtexto
-
+    
     let currentCalculatedHeight = 0; // Usaremos para somar a altura total do conteúdo de texto
-
+    
     // --- 1. Calcular a Altura Necessária para o Texto Principal ---
     ctx.font = "18px 'Press Start 2P', monospace";
     const wrappedMainLines = wrapText(ctx, this.text, boxWidth - (paddingX * 2));
     currentCalculatedHeight += wrappedMainLines.length * mainTextLineHeight;
-
+    
     // --- 2. Calcular a Altura Necessária para o Subtexto (se existir) ---
     let wrappedSubLines = [];
     if (this.subtext) {
-        // Adiciona o espaçamento entre o texto principal e o subtexto
-        currentCalculatedHeight += spacingBetweenTexts;
-
-        ctx.font = "12px 'Press Start 2P', monospace"; // Mude a fonte para o subtexto antes de medir
-        wrappedSubLines = wrapText(ctx, this.subtext, boxWidth - (paddingX * 2));
-        currentCalculatedHeight += wrappedSubLines.length * subTextLineHeight;
+      // Adiciona o espaçamento entre o texto principal e o subtexto
+      currentCalculatedHeight += spacingBetweenTexts;
+      
+      ctx.font = "12px 'Press Start 2P', monospace"; // Mude a fonte para o subtexto antes de medir
+      wrappedSubLines = wrapText(ctx, this.subtext, boxWidth - (paddingX * 2));
+      currentCalculatedHeight += wrappedSubLines.length * subTextLineHeight;
     }
-
+    
     // --- 3. Definir a Altura Final da Caixa de Diálogo ---
     // Adiciona o padding vertical à altura calculada do texto
     // Aumentei a altura mínima para garantir que a caixa seja sempre maior.
@@ -327,21 +333,21 @@ const dialogManager = {
     // Posição Y da caixa: centralizar ela verticalmente na parte superior da tela ou ajustar
     // Para a imagem que você mostrou, ela parece estar um pouco abaixo do topo, mas ainda na parte superior.
     const centerY = 50; // Ajustado para descer um pouco a caixa se necessário.
-
+    
     ctx.save();
     ctx.globalAlpha = this.opacity;
     // Efeito de transição: a caixa desliza para cima enquanto a opacidade aumenta
     ctx.translate(0, (1 - this.opacity) * -20); // Mantenha este efeito se quiser
-
+    
     // --- 4. Desenha a Imagem da Caixa com a Altura Dinâmica ---
     ctx.drawImage(dialogueBoxImage, centerX, centerY, boxWidth, dynamicBoxHeight);
-
+    
     // --- 5. Preparar o Contexto para o Texto ---
     ctx.textAlign = "center";
     ctx.strokeStyle = "black";
     ctx.lineWidth = 2;
     ctx.fillStyle = "white";
-
+    
     // Posição X para o texto (centralizado dentro da caixa, considerando o padding)
     const textX = centerX + boxWidth / 2 - 15;
 
@@ -351,111 +357,142 @@ const dialogManager = {
     let currentTextY = centerY + paddingY + (dynamicBoxHeight - (paddingY * 2) - currentCalculatedHeight) / 2;
     // Adiciona o half-line height para o baseline do texto ficar no centro da primeira linha.
     currentTextY += mainTextLineHeight / 2;
-
-
+    
+    
     // --- 7. Desenhar o Texto Principal ---
     ctx.font = "15px 'Press Start 2P', monospace"; // Reaplicar a fonte para o texto principal
     wrappedMainLines.forEach((line, index) => {
-        const lineY = currentTextY + index * mainTextLineHeight;
-        ctx.strokeText(line, textX, lineY);
-        ctx.fillText(line, textX, lineY);
+      const lineY = currentTextY + index * mainTextLineHeight;
+      ctx.strokeText(line, textX, lineY);
+      ctx.fillText(line, textX, lineY);
     });
-
+    
     // --- 8. Desenhar o Subtexto (se existir) ---
     if (this.subtext) {
-        // Atualiza a posição Y para o subtexto, adicionando o espaçamento e a altura do texto principal
-        currentTextY += (wrappedMainLines.length * mainTextLineHeight) + spacingBetweenTexts;
-        // Ajusta o offset para a nova fonte (subtexto)
-        // Isso é para garantir que a baseline do subtexto esteja no centro da primeira linha do subtexto
-        currentTextY += (subTextLineHeight / 2) - (mainTextLineHeight / 2);
-
-        ctx.font = "12px 'Press Start 2P', monospace"; // Reaplicar a fonte para o subtexto
-        wrappedSubLines.forEach((line, index) => {
-            const lineY = currentTextY + index * subTextLineHeight;
-            ctx.strokeText(line, textX, lineY);
-            ctx.fillText(line, textX, lineY);
-        });
+      // Atualiza a posição Y para o subtexto, adicionando o espaçamento e a altura do texto principal
+      currentTextY += (wrappedMainLines.length * mainTextLineHeight) + spacingBetweenTexts;
+      // Ajusta o offset para a nova fonte (subtexto)
+      // Isso é para garantir que a baseline do subtexto esteja no centro da primeira linha do subtexto
+      currentTextY += (subTextLineHeight / 2) - (mainTextLineHeight / 2);
+      
+      ctx.font = "12px 'Press Start 2P', monospace"; // Reaplicar a fonte para o subtexto
+      wrappedSubLines.forEach((line, index) => {
+        const lineY = currentTextY + index * subTextLineHeight;
+        ctx.strokeText(line, textX, lineY);
+        ctx.fillText(line, textX, lineY);
+      });
     }
-
+    
+    if (showSlotResults && currentSlotResults.length === 3) {
+      const iconSize = 120;
+      const spacing = 40;
+      const totalWidth = iconSize * 3 + spacing * 2;
+      const startX = (canvas.width - totalWidth) / 2;
+      const y = canvas.height * 0.25;
+      
+      currentSlotResults.forEach((symbol, i) => {
+        const x = startX + i * (iconSize + spacing);
+        ctx.drawImage(slotIcons[symbol.name], x, y, iconSize, iconSize);
+      });
+      
+      // Mostrar texto acima das imagens
+      ctx.font = "bold 28px sans-serif";
+      ctx.fillStyle = "white";
+      ctx.textAlign = "center";
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 3;
+      
+      const message =
+      dialogManager.type === "slotWin"
+      ? "Você ganhou!😎 + R$ 40,00"
+      : dialogManager.type === "slotLose"
+      ? "Você perdeu!😥"
+      : "";
+      
+      if (message) {
+        ctx.strokeText(message, canvas.width / 2, y - 30);
+        ctx.fillText(message, canvas.width / 2, y - 30);
+      }
+    }
     ctx.restore();
-}
-
-// Mantenha a função wrapText como a última versão corrigida que eu te passei.
-// Certifique-se de que ela está DECLARADA FORA de qualquer outro método ou classe.
+  }
+  
+  // Mantenha a função wrapText como a última versão corrigida que eu te passei.
+  // Certifique-se de que ela está DECLARADA FORA de qualquer outro método ou classe.
 }
 function wrapText(ctx, text, maxWidth) {
-    const lines = [];
-    let currentLine = '';
-
-    // Primeiro, vamos lidar com quebras de linha explícitas (se houver no texto original)
-    const paragraphs = text.split('\n'); // <-- ESTA LINHA É A CHAVE PARA O '\n'
-
-    paragraphs.forEach(para => {
-        const words = para.split(' ');
-        currentLine = ''; // Reinicia a linha para cada parágrafo
-
-        for (let i = 0; i < words.length; i++) {
-            const word = words[i];
-            let testLine = '';
-
-            if (currentLine === '') {
-                testLine = word;
-            } else {
-                testLine = currentLine + ' ' + word;
-            }
-
-            const metrics = ctx.measureText(testLine);
-            const testWidth = metrics.width;
-
-            if (testWidth > maxWidth) {
-                if (currentLine !== '') {
-                    lines.push(currentLine);
-                }
-                currentLine = word;
-
-                const wordMetrics = ctx.measureText(word);
-                if (wordMetrics.width > maxWidth) {
-                    let tempWord = '';
-                    for (let charIndex = 0; charIndex < word.length; charIndex++) {
-                        const char = word[charIndex];
-                        const tempTestLine = tempWord + char;
-                        const tempMetrics = ctx.measureText(tempTestLine);
-                        if (tempMetrics.width > maxWidth && tempWord !== '') {
-                            lines.push(tempWord);
-                            tempWord = char;
-                        } else {
-                            tempWord = tempTestLine;
-                        }
-                    }
-                    if (tempWord.length > 0) {
-                        lines.push(tempWord);
-                    }
-                    currentLine = '';
-                } else {
-                    currentLine = word;
-                }
-            } else {
-                currentLine = testLine;
-            }
+  const lines = [];
+  let currentLine = '';
+  
+  // Primeiro, vamos lidar com quebras de linha explícitas (se houver no texto original)
+  const paragraphs = text.split('\n'); // <-- ESTA LINHA É A CHAVE PARA O '\n'
+  
+  paragraphs.forEach(para => {
+    const words = para.split(' ');
+    currentLine = ''; // Reinicia a linha para cada parágrafo
+    
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      let testLine = '';
+      
+      if (currentLine === '') {
+        testLine = word;
+      } else {
+        testLine = currentLine + ' ' + word;
+      }
+      
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      
+      if (testWidth > maxWidth) {
+        if (currentLine !== '') {
+          lines.push(currentLine);
         }
-        if (currentLine.length > 0) {
-            lines.push(currentLine);
+        currentLine = word;
+        
+        const wordMetrics = ctx.measureText(word);
+        if (wordMetrics.width > maxWidth) {
+          let tempWord = '';
+          for (let charIndex = 0; charIndex < word.length; charIndex++) {
+            const char = word[charIndex];
+            const tempTestLine = tempWord + char;
+            const tempMetrics = ctx.measureText(tempTestLine);
+            if (tempMetrics.width > maxWidth && tempWord !== '') {
+              lines.push(tempWord);
+              tempWord = char;
+            } else {
+              tempWord = tempTestLine;
+            }
+          }
+          if (tempWord.length > 0) {
+            lines.push(tempWord);
+          }
+          currentLine = '';
+        } else {
+          currentLine = word;
         }
-    });
-
-    return lines;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine.length > 0) {
+      lines.push(currentLine);
+    }
+  });
+  
+  return lines;
 }
 
 function updateMoneyDisplay() {
   const moneySpan = document.getElementById('money');
   moneySpan.textContent = `R$ ${playerMoney.toFixed(2)}`;
-
+  
   // Animação do texto
   moneySpan.classList.add('moneyGain');
   setTimeout(() => {
     moneySpan.classList.remove('moneyGain');
   }, 500);
-
+  
   // Animação do ícone
   const moneyIcon = document.querySelector('.moneyIcon');
   if (moneyIcon) {
@@ -485,54 +522,72 @@ function resetInteractionFlags() {
   justClosedLemonadeDialog = false;
   interactedWithLemonade = false;
   nearLemonade = false;
-
+  
   justClosedDoorDialog = false;
   interactedWithDoor = false;
   nearDoor = false;
-
+  
   justClosedShoppingDoorDialog = false;
   interactedWithShoppingDoor = false;
   nearShoppingDoor = false;
-
+  
   interactedWithLeftShopItem = false;
   nearLeftShopItem = false;
-
+  
   interactedWithRightShopItem = false;
   nearRightShopItem = false;
-
+  
   interactedWithLeftShopItem = false;
   nearLeftShopItem = false;
-
+  
   interactedWithRightShopItem = false;
   nearRightShopItem = false;
-
+  
   justClosedCasinoDoorDialog = false;
   interactedWithCasinoDoor = false;
   nearCasinoDoor = false;
-
+  
   justClosedBedDialog = false;
   interactedWithBed = false;
   nearBed = false;
-
+  
   nearCasinoExit = false;
   nearRoomExit = false;
   nearShoppingExit = false;
+  
+  nearSlotMachine = false;
+  interactedWithSlotMachine = false;
+}
+
+function playSlotMachine() {
+  const symbols = [
+  { name: "bacon", image: "./imagens/slot-machine/bacon.png" },
+  { name: "cofre", image: "./imagens/slot-machine/cofre.png" },
+  { name: "limonada", image: "./imagens/slot-machine/limonada.png" },
+  { name: "moeda", image: "./imagens/slot-machine/moeda.png" },
+  { name: "porco", image: "./imagens/slot-machine/porco.png" },
+  ];
+  
+  const getRandom = () => symbols[Math.floor(Math.random() * symbols.length)];
+  return [getRandom(), getRandom(), getRandom()];
 }
 
 document.addEventListener("keydown", (e) => {
   if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
-
+  
   // Impede ações enquanto estiver "No trabalho..."
   if (dialogManager.type === "working") return;
-
+  
   // ESC fecha qualquer balão
   if (e.key === "Escape") {
     if (dialogManager.active) {
       const closedType = dialogManager.type;
-
+      
       // Se estiver na tela de wakeUp, ESC age como E (levantar da cama)
       if (closedType === "wakeUp" && waitingWakeUpDismiss) {
         dialogManager.hide();
+        showSlotResults = false;
+        currentSlotResults = [];
         setTimeout(() => {
           currentMap = "quarto";
           loadMap("mapa-quarto");
@@ -544,69 +599,69 @@ document.addEventListener("keydown", (e) => {
         }, 400);
         return; // impede execução do resto do ESC
       }
-
+      
       dialogManager.hide();
-
+      
       switch (closedType) {
         case "lemonade":
         case "lemonadeHint":
-          justClosedLemonadeDialog = true;
-          setTimeout(() => (justClosedLemonadeDialog = false), 500);
-          break;
+        justClosedLemonadeDialog = true;
+        setTimeout(() => (justClosedLemonadeDialog = false), 500);
+        break;
         case "door":
         case "doorHint":
-          justClosedDoorDialog = true;
-          setTimeout(() => (justClosedDoorDialog = false), 500);
-          break;
+        justClosedDoorDialog = true;
+        setTimeout(() => (justClosedDoorDialog = false), 500);
+        break;
         case "office":
         case "alreadyWorked":
-          justClosedOfficeDialog = true;
-          setTimeout(() => (justClosedOfficeDialog = false), 500);
-          break;
+        justClosedOfficeDialog = true;
+        setTimeout(() => (justClosedOfficeDialog = false), 500);
+        break;
         case "endWork":
-          justClosedOfficeDialog = true;
-          hidePig = false;
-          setTimeout(() => (justClosedOfficeDialog = false), 500);
-          break;
+        justClosedOfficeDialog = true;
+        hidePig = false;
+        setTimeout(() => (justClosedOfficeDialog = false), 500);
+        break;
         case "shoppingDoor":
         case "shoppingDoorHint":
-          justClosedShoppingDoorDialog = true;
-          setTimeout(() => (justClosedShoppingDoorDialog = false), 500);
-          break;
+        justClosedShoppingDoorDialog = true;
+        setTimeout(() => (justClosedShoppingDoorDialog = false), 500);
+        break;
         case "casinoDoor":
         case "casinoDoorHint":
-          justClosedCasinoDoorDialog = true;
-          setTimeout(() => (justClosedCasinoDoorDialog = false), 500);
-          break;
+        justClosedCasinoDoorDialog = true;
+        setTimeout(() => (justClosedCasinoDoorDialog = false), 500);
+        break;
         case "bed":
         case "bedHint":
-          justClosedBedDialog = true;
-          setTimeout(() => (justClosedBedDialog = false), 500);
-          break;
+        justClosedBedDialog = true;
+        setTimeout(() => (justClosedBedDialog = false), 500);
+        break;
       }
     }
   }
-
+  
   if (e.key === "e" || e.key === "E") {
     if (dialogManager.active && dialogManager.type === "warningDia4") {
       dialogManager.hide();
       return;
     }
-
+    
     if (dialogManager.active && dialogManager.type === "warning") {
       dialogManager.hide();
-
+      
       // Reexibe o balão de wakeUp após fechar o alerta
       dialogManager.show(
-        "wakeUp",
-        `Dia ${currentDay}!`,
-        `Pressione 'E' para levantar`
+      "wakeUp",
+      `Dia ${currentDay}!`,
+      `Pressione 'E' para levantar`
       );
-
+      
       waitingWakeUpDismiss = true;
       return;
     }
-
+    
     if (dialogManager.active && dialogManager.type === "endWork") {
       dialogManager.hide();
       hidePig = false;
@@ -614,11 +669,11 @@ document.addEventListener("keydown", (e) => {
       setTimeout(() => (justClosedOfficeDialog = false), 500);
       return;
     }
-
+    
     if (
-      waitingWakeUpDismiss &&
-      dialogManager.active &&
-      dialogManager.type === "wakeUp"
+    waitingWakeUpDismiss &&
+    dialogManager.active &&
+    dialogManager.type === "wakeUp"
     ) {
       dialogManager.hide();
       setTimeout(() => {
@@ -632,7 +687,7 @@ document.addEventListener("keydown", (e) => {
       }, 400);
       return;
     }
-
+    
     if (currentMap === "casa" && nearLemonade) {
       if (dialogManager.active && dialogManager.type === "lemonade") {
         if (playerMoney >= 25) {
@@ -641,22 +696,22 @@ document.addEventListener("keydown", (e) => {
           updateMoneyDisplay();
           updateDayDisplay();
           dialogManager.show(
-            "lemonadeSuccess",
-            "Você comprou uma limonada!",
-            "Refrescante! :)"
+          "lemonadeSuccess",
+          "Você comprou uma limonada!",
+          "Refrescante! :)"
           );
         } else {
           dialogManager.show(
-            "lemonadeFail",
-            "Você não tem dinheiro suficiente.",
-            "A limonada custa 25 reais.\n"
+          "lemonadeFail",
+          "Você não tem dinheiro suficiente.",
+          "A limonada custa 25 reais.\n"
           );
         }
       } else {
         dialogManager.show(
-          "lemonade",
-          "Gostaria de uma limonada geladinha por 25 reais?",
-          "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
+        "lemonade",
+        "Gostaria de uma limonada geladinha por 25 reais?",
+        "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
         );
         interactedWithLemonade = true;
       }
@@ -670,61 +725,61 @@ document.addEventListener("keydown", (e) => {
         dialogManager.hide();
       } else {
         dialogManager.show(
-          "door",
-          "Deseja entrar em casa?",
-          "'E' para entrar\n'ESC' para cancelar"
+        "door",
+        "Deseja entrar em casa?",
+        "'E' para entrar\n'ESC' para cancelar"
         );
         interactedWithDoor = true;
       }
     }
-
+    
     if (currentMap === "quarto" && nearBed) {
       if (dialogManager.active && dialogManager.type === "bed") {
         const dailyExpense = 20;
         updateMoneyDisplay();
-
+        
         assets.background.onload = () => {
           resizeCanvas();
-
+          
           playerMoney -= dailyExpense;
           moneySpentToday += dailyExpense;
           updateMoneyDisplay();
-
+          
           const moneyLost = moneySpentToday;
           const netEarned = moneyEarnedToday;
           const dailyBalance = netEarned - moneyLost;
-
+          
           currentDay++;
           updateDayDisplay();
           moneyEarnedToday = 0;
           moneySpentToday = 0;
           workedToday = false;
-
+          
           dialogManager.show(
-            "wakeUp",
-            `Dia ${currentDay}!`,
-            `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00 \n sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${dailyBalance},00\nPressione 'E' para levantar`
+          "wakeUp",
+          `Dia ${currentDay}!`,
+          `Dinheiro ganho: R$ ${netEarned},00\nDinheiro perdido: R$ ${moneyLost},00 \n sendo R$ ${dailyExpense},00 de aluguel e comida\nSaldo diário: R$ ${dailyBalance},00\nPressione 'E' para levantar`
           );
           hidePig = true;
           waitingWakeUpDismiss = true;
         };
-
+        
         currentMap = "quartoNoite";
         loadMap("mapa-quarto-noite");
       } else {
         dialogManager.show(
-          "bed",
-          "Deseja dormir um pouco? 💤",
-          "'E' para dormir\n'ESC' para cancelar"
+        "bed",
+        "Deseja dormir um pouco? 💤",
+        "'E' para dormir\n'ESC' para cancelar"
         );
         interactedWithBed = true;
       }
     } else if (currentMap === "trabalho" && nearOffice) {
       if (workedToday) {
         dialogManager.show(
-          "alreadyWorked",
-          "Você já trabalhou hoje!",
-          "Vá para casa descansar antes de \ntrabalhar novamente."
+        "alreadyWorked",
+        "Você já trabalhou hoje!",
+        "Vá para casa descansar antes de \ntrabalhar novamente."
         );
       } else if (dialogManager.active && dialogManager.type === "office") {
         hidePig = true;
@@ -736,21 +791,21 @@ document.addEventListener("keydown", (e) => {
           updateMoneyDisplay();
           workedToday = true;
           dialogManager.show(
-            "endWork",
-            "Fim do expediente!",
-            "Você ganhou R$ 50,00!\nPressione 'ESC' para sair"
+          "endWork",
+          "Fim do expediente!",
+          "Você ganhou R$ 50,00!\nPressione 'ESC' para sair"
           );
         }, 2000);
       } else {
         dialogManager.show(
-          "office",
-          "Deseja começar seu expediente no escritório?",
-          "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
+        "office",
+        "Deseja começar seu expediente no escritório?",
+        "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
         );
         interactedWithOffice = true;
       }
     }
-
+    
     if (currentMap === "shopping" && nearShoppingDoor) {
       if (dialogManager.active && dialogManager.type === "shoppingDoor") {
         currentMap = "shoppingInterno";
@@ -761,14 +816,14 @@ document.addEventListener("keydown", (e) => {
         dialogManager.hide();
       } else {
         dialogManager.show(
-          "shoppingDoor",
-          "Deseja entrar no shopping?",
-          "'E' para entrar\n'ESC' para cancelar"
+        "shoppingDoor",
+        "Deseja entrar no shopping?",
+        "'E' para entrar\n'ESC' para cancelar"
         );
         interactedWithShoppingDoor = true;
       }
     }
-
+    
     if (currentMap === "shoppingInterno" && nearLeftShopItem) {
       if (dialogManager.active && dialogManager.type === "leftShop") {
         if (playerMoney >= 30) {
@@ -776,27 +831,27 @@ document.addEventListener("keydown", (e) => {
           moneySpentToday += 30;
           updateMoneyDisplay();
           dialogManager.show(
-            "leftShopSuccess",
-            "Você comprou itens de Saúde e Higiene!",
-            "Cuidado é tudo. :)"
+          "leftShopSuccess",
+          "Você comprou itens de Saúde e Higiene!",
+          "Cuidado é tudo. :)"
           );
         } else {
           dialogManager.show(
-            "leftShopFail",
-            "Dinheiro insuficiente!",
-            "Os itens custam R$ 30,00."
+          "leftShopFail",
+          "Dinheiro insuficiente!",
+          "Os itens custam R$ 30,00."
           );
         }
       } else {
         dialogManager.show(
-          "leftShop",
-          "Comprar itens de Saúde e Higiene por R$ 30,00?",
-          "'E' para confirmar\n'ESC' para cancelar"
+        "leftShop",
+        "Comprar itens de Saúde e Higiene por R$ 30,00?",
+        "'E' para confirmar\n'ESC' para cancelar"
         );
         interactedWithLeftShopItem = true;
       }
     }
-
+    
     if (currentMap === "shoppingInterno" && nearRightShopItem) {
       if (dialogManager.active && dialogManager.type === "rightShop") {
         if (playerMoney >= 40) {
@@ -804,27 +859,27 @@ document.addEventListener("keydown", (e) => {
           moneySpentToday += 40;
           updateMoneyDisplay();
           dialogManager.show(
-            "rightShopSuccess",
-            "Você comprou Mantimentos!",
-            "Barriga cheia!"
+          "rightShopSuccess",
+          "Você comprou Mantimentos!",
+          "Barriga cheia!"
           );
         } else {
           dialogManager.show(
-            "rightShopFail",
-            "Dinheiro insuficiente!",
-            "Os Mantimentos custam R$ 40,00."
+          "rightShopFail",
+          "Dinheiro insuficiente!",
+          "Os Mantimentos custam R$ 40,00."
           );
         }
       } else {
         dialogManager.show(
-          "rightShop",
-          "Comprar Mantimentos por R$ 40,00?",
-          "'E' para confirmar\n'ESC' para cancelar"
+        "rightShop",
+        "Comprar Mantimentos por R$ 40,00?",
+        "'E' para confirmar\n'ESC' para cancelar"
         );
         interactedWithRightShopItem = true;
       }
     }
-
+    
     if (currentMap === "shoppingInterno" && nearLeftShopItem) {
       if (dialogManager.active && dialogManager.type === "leftShop") {
         if (playerMoney >= 30) {
@@ -832,27 +887,27 @@ document.addEventListener("keydown", (e) => {
           moneySpentToday += 30;
           updateMoneyDisplay();
           dialogManager.show(
-            "leftShopSuccess",
-            "Você comprou itens de Saúde e Higiene!",
-            "Cuidado é tudo. :)"
+          "leftShopSuccess",
+          "Você comprou itens de Saúde e Higiene!",
+          "Cuidado é tudo. :)"
           );
         } else {
           dialogManager.show(
-            "leftShopFail",
-            "Dinheiro insuficiente!",
-            "Os itens custam R$ 30,00."
+          "leftShopFail",
+          "Dinheiro insuficiente!",
+          "Os itens custam R$ 30,00."
           );
         }
       } else {
         dialogManager.show(
-          "leftShop",
-          "Comprar itens de Saúde e Higiene por R$ 30,00?",
-          "'E' para confirmar\n'ESC' para cancelar"
+        "leftShop",
+        "Comprar itens de Saúde e Higiene por R$ 30,00?",
+        "'E' para confirmar\n'ESC' para cancelar"
         );
         interactedWithLeftShopItem = true;
       }
     }
-
+    
     if (currentMap === "shoppingInterno" && nearRightShopItem) {
       if (dialogManager.active && dialogManager.type === "rightShop") {
         if (playerMoney >= 40) {
@@ -860,27 +915,27 @@ document.addEventListener("keydown", (e) => {
           moneySpentToday += 40;
           updateMoneyDisplay();
           dialogManager.show(
-            "rightShopSuccess",
-            "Você comprou Mantimentos!",
-            "Barriga cheia!"
+          "rightShopSuccess",
+          "Você comprou Mantimentos!",
+          "Barriga cheia!"
           );
         } else {
           dialogManager.show(
-            "rightShopFail",
-            "Dinheiro insuficiente!",
-            "Os Mantimentos custam R$ 40,00."
+          "rightShopFail",
+          "Dinheiro insuficiente!",
+          "Os Mantimentos custam R$ 40,00."
           );
         }
       } else {
         dialogManager.show(
-          "rightShop",
-          "Comprar Mantimentos por R$ 40,00?",
-          "'E' para confirmar\n'ESC' para cancelar"
+        "rightShop",
+        "Comprar Mantimentos por R$ 40,00?",
+        "'E' para confirmar\n'ESC' para cancelar"
         );
         interactedWithRightShopItem = true;
       }
     }
-
+    
     if (currentMap === "casino" && nearCasinoDoor) {
       if (dialogManager.active && dialogManager.type === "casinoDoor") {
         currentMap = "casinoInterno";
@@ -891,13 +946,13 @@ document.addEventListener("keydown", (e) => {
         dialogManager.hide();
       } else {
         dialogManager.show(
-          "casinoDoor",
-          "Deseja entrar no cassino?",
-          "'E' para entrar\n'ESC' para cancelar"
+        "casinoDoor",
+        "Deseja entrar no cassino?",
+        "'E' para entrar\n'ESC' para cancelar"
         );
       }
     }
-
+    
     if (currentMap === "shoppingInterno" && nearShoppingExit) {
       currentMap = "shopping";
       loadMap("mapa-shopping");
@@ -906,7 +961,7 @@ document.addEventListener("keydown", (e) => {
       pig.y = sidewalkY;
       dialogManager.hide();
     }
-
+    
     if (currentMap === "casinoInterno" && nearCasinoExit) {
       currentMap = "casino";
       loadMap("mapa-cassino");
@@ -915,7 +970,67 @@ document.addEventListener("keydown", (e) => {
       pig.y = sidewalkY;
       dialogManager.hide();
     }
-
+    
+    if (currentMap === "casinoInterno" && nearSlotMachine) {
+      if (dialogManager.active && dialogManager.type === "slotMachine") {
+        if (playerMoney >= 20) {
+          playerMoney -= 20;
+          moneySpentToday += 20;
+          updateMoneyDisplay();
+          
+          dialogManager.show("slotRolling", "Girando... ⏳", "⏳");
+          
+          let results = ["❓", "❓", "❓"];
+          let spinInterval = setInterval(() => {
+            results = playSlotMachine();
+            currentSlotResults = results;
+            showSlotResults = true;
+          }, 150);
+          
+          setTimeout(() => {
+            clearInterval(spinInterval);
+            
+            const [a, b, c] = results.map(r => r.name);
+            const allSame = a === b && b === c;
+            
+            if (allSame) {
+              const reward = 100;
+              playerMoney += reward;
+              moneyEarnedToday += reward;
+              updateMoneyDisplay();
+              dialogManager.show("slotWin", "", "");
+            } else {
+              dialogManager.show("slotLose", "", "");
+            }
+            
+            // Mostra os símbolos por 2s, depois esconde tudo
+            setTimeout(() => {
+              showSlotResults = false;
+              currentSlotResults = [];
+              dialogManager.hide();
+            }, 2000);
+          }, 5000); // após 5 segundos, exibe o resultado
+          
+        } else {
+          dialogManager.show(
+          "slotNoMoney",
+          "Dinheiro insuficiente!",
+          "Você precisa de R$ 20,00 para jogar."
+          );
+        }
+      } else {
+        dialogManager.show(
+        "slotMachine",
+        "Jogar na caça-níquel por R$ 20,00?",
+        "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
+        );
+        interactedWithSlotMachine = true;
+      }
+      
+      resetInteractionFlags();
+      return;
+    }
+    
     if (currentMap === "sala" && nearRoomExit) {
       currentMap = "casa";
       loadMap("mapa-casa");
@@ -924,7 +1039,7 @@ document.addEventListener("keydown", (e) => {
       pig.y = sidewalkY;
       dialogManager.hide();
     }
-
+    
     resetInteractionFlags();
   }
 });
@@ -936,9 +1051,9 @@ document.addEventListener("keyup", (e) => {
 function update() {
   // Impede movimentação do personagem enquanto está no trabalho
   if (dialogManager.type === "working") return;
-
+  
   let moveX = 0;
-
+  
   if (keys.ArrowLeft) {
     moveX -= pig.speed;
     pig.direction = "left";
@@ -947,28 +1062,28 @@ function update() {
     moveX += pig.speed;
     pig.direction = "right";
   }
-
+  
   pig.x = Math.max(0, Math.min(canvas.width - pig.width, pig.x + moveX));
-
+  
   // Pula
   if (keys.ArrowUp && !pig.isJumping) {
     pig.velocityY = jumpForce;
     pig.isJumping = true;
   }
-
+  
   // Física do pulo
   pig.velocityY += gravity;
   pig.y += pig.velocityY;
-
+  
   // Para na calçada ao pular
   if (pig.y >= sidewalkY) {
     pig.y = sidewalkY;
     pig.velocityY = 0;
     pig.isJumping = false;
   }
-
+  
   const internalMaps = ["shoppingInterno", "casinoInterno"];
-
+  
   if (!internalMaps.includes(currentMap)) {
     if (pig.x + pig.width >= canvas.width - 10) switchMap("right");
     if (pig.x <= 10) switchMap("left");
@@ -987,32 +1102,32 @@ function update() {
     nearLemonade = true;
     if (!dialogManager.active && !justClosedLemonadeDialog) {
       dialogManager.show(
-        "lemonadeHint",
-        "Barraquinha de Limonada!",
-        "Pressione 'E' para interagir"
+      "lemonadeHint",
+      "Barraquinha de Limonada!",
+      "Pressione 'E' para interagir"
       );
     }
   } else {
     nearLemonade = false;
     interactedWithLemonade = false;
     if (
-      dialogManager.type === "lemonade" ||
-      dialogManager.type === "lemonadeHint" ||
-      dialogManager.type === "lemonadeSuccess" ||
-      dialogManager.type === "lemonadeFail"
+    dialogManager.type === "lemonade" ||
+    dialogManager.type === "lemonadeHint" ||
+    dialogManager.type === "lemonadeSuccess" ||
+    dialogManager.type === "lemonadeFail"
     ) {
       dialogManager.hide();
     }
   }
-
+  
   // Interação com a porta da casa
   if (currentMap === "casa" && isNearCenter()) {
     nearDoor = true;
     if (!dialogManager.active && !justClosedDoorDialog) {
       dialogManager.show(
-        "doorHint",
-        "Porta da Casa!",
-        "Pressione 'E' para interagir"
+      "doorHint",
+      "Porta da Casa!",
+      "Pressione 'E' para interagir"
       );
     }
   } else {
@@ -1045,48 +1160,48 @@ function update() {
   // Interação com escritório no mapa de trabalho
   if (currentMap === "trabalho" && isNearCenter()) {
     nearOffice = true;
-
+    
     if (!dialogManager.active && !justClosedOfficeDialog) {
       dialogManager.show(
-        "officeHint",
-        "Escritório de Trabalho",
-        "Pressione 'E' para trabalhar"
+      "officeHint",
+      "Escritório de Trabalho",
+      "Pressione 'E' para trabalhar"
       );
     }
   } else {
     nearOffice = false;
     interactedWithOffice = false;
-
+    
     if (
-      dialogManager.type === "office" ||
-      dialogManager.type === "officeHint" ||
-      dialogManager.type === "alreadyWorked"
+    dialogManager.type === "office" ||
+    dialogManager.type === "officeHint" ||
+    dialogManager.type === "alreadyWorked"
     ) {
       dialogManager.hide();
     }
   }
-
+  
   // Interação com a porta do shopping
   if (currentMap === "shopping" && isNearCenter()) {
     nearShoppingDoor = true;
     if (!dialogManager.active && !justClosedShoppingDoorDialog) {
       dialogManager.show(
-        "shoppingDoorHint",
-        "Porta do shopping!",
-        "Pressione 'E' para interagir"
+      "shoppingDoorHint",
+      "Porta do shopping!",
+      "Pressione 'E' para interagir"
       );
     }
   } else {
     nearShoppingDoor = false;
     interactedWithShoppingDoor = false;
     if (
-      dialogManager.type === "shoppingDoor" ||
-      dialogManager.type === "shoppingDoorHint"
+    dialogManager.type === "shoppingDoor" ||
+    dialogManager.type === "shoppingDoorHint"
     ) {
       dialogManager.hide();
     }
   }
-
+  
   // Balão de interação com a prateleira esquerda do shopping
   if (currentMap === "shoppingInterno" && pig.x >= 101 && pig.x <= 200) {
     nearLeftShopItem = true;
@@ -1104,18 +1219,18 @@ function update() {
     interactedWithLeftShopItem = false; // Reseta interação
     dialogManager.hide(); // Esconde o balão
   }
-
+  
   // Balão de interação com a prateleira direita do shopping
   if (
-    currentMap === "shoppingInterno" &&
-    pig.x + pig.width >= canvas.width - 350
+  currentMap === "shoppingInterno" &&
+  pig.x + pig.width >= canvas.width - 350
   ) {
     nearRightShopItem = true;
     if (!dialogManager.active && !interactedWithRightShopItem) {
       dialogManager.show(
-        "rightShopHint",
-        "Mantimentos",
-        "Pressione 'E' para ver \nMantimentos por R$ 40,00"
+      "rightShopHint",
+      "Mantimentos",
+      "Pressione 'E' para ver \nMantimentos por R$ 40,00"
       );
     }
   } else if (dialogManager.type === "rightShopHint") {
@@ -1123,15 +1238,15 @@ function update() {
     interactedWithRightShopItem = false;
     dialogManager.hide();
   }
-
+  
   // Balão de interação com a prateleira esquerda do shopping
   if (currentMap === "shoppingInterno" && pig.x >= 101 && pig.x <= 200) {
     nearLeftShopItem = true;
     if (!dialogManager.active && !interactedWithLeftShopItem) {
       dialogManager.show(
-        "leftShopHint",
-        "Saúde e Higiene",
-        "Pressione 'E' para ver produtos de Saúde e Higiene por R$ 30,00"
+      "leftShopHint",
+      "Saúde e Higiene",
+      "Pressione 'E' para ver produtos de Saúde e Higiene por R$ 30,00"
       );
     }
   } else if (dialogManager.type === "leftShopHint") {
@@ -1139,18 +1254,18 @@ function update() {
     interactedWithLeftShopItem = false;
     dialogManager.hide();
   }
-
+  
   // Balão de interação com a prateleira direita do shopping
   if (
-    currentMap === "shoppingInterno" &&
-    pig.x + pig.width >= canvas.width - 350
+  currentMap === "shoppingInterno" &&
+  pig.x + pig.width >= canvas.width - 350
   ) {
     nearRightShopItem = true;
     if (!dialogManager.active && !interactedWithRightShopItem) {
       dialogManager.show(
-        "rightShopHint",
-        "Mantimentos",
-        "Pressione 'E' para ver Mantimentos por R$ 40,00"
+      "rightShopHint",
+      "Mantimentos",
+      "Pressione 'E' para ver Mantimentos por R$ 40,00"
       );
     }
   } else if (dialogManager.type === "rightShopHint") {
@@ -1158,36 +1273,36 @@ function update() {
     interactedWithRightShopItem = false;
     dialogManager.hide();
   }
-
+  
   // Interação com a porta do cassino
   if (currentMap === "casino" && isNearCenter()) {
     nearCasinoDoor = true;
     if (!dialogManager.active && !justClosedCasinoDoorDialog) {
       dialogManager.show(
-        "casinoDoorHint",
-        "Porta do Cassino!",
-        "Pressione 'E' para interagir"
+      "casinoDoorHint",
+      "Porta do Cassino!",
+      "Pressione 'E' para interagir"
       );
     }
   } else {
     nearCasinoDoor = false;
     interactedWithCasinoDoor = false;
     if (
-      dialogManager.type === "casinoDoor" ||
-      dialogManager.type === "casinoDoorHint"
+    dialogManager.type === "casinoDoor" ||
+    dialogManager.type === "casinoDoorHint"
     ) {
       dialogManager.hide();
     }
   }
-
+  
   // Interação com a cama no quarto
   if (currentMap === "quarto" && isNearCenter()) {
     nearBed = true;
     if (!dialogManager.active && !justClosedBedDialog) {
       dialogManager.show(
-        "bedHint",
-        "Cama confortável!",
-        "Pressione 'E' para dormir"
+      "bedHint",
+      "Cama confortável!",
+      "Pressione 'E' para dormir"
       );
     }
   } else {
@@ -1197,38 +1312,55 @@ function update() {
       dialogManager.hide();
     }
   }
-
+  
   // Saída do shopping (lado esquerdo)
   if (currentMap === "shoppingInterno" && pig.x <= 100) {
     nearShoppingExit = true;
     if (!dialogManager.active) {
       dialogManager.show(
-        "shoppingExitHint",
-        "",
-        "Pressione 'E' para sair do shopping"
+      "shoppingExitHint",
+      "",
+      "Pressione 'E' para sair do shopping"
       );
     }
   } else if (dialogManager.type === "shoppingExitHint") {
     nearShoppingExit = false;
     dialogManager.hide();
   }
-
+  
   // Saída do cassino (lado esquerdo)
   // Saída do cassino (lado esquerdo)
   if (currentMap === "casinoInterno" && pig.x <= 100) {
     nearCasinoExit = true;
     if (!dialogManager.active) {
       dialogManager.show(
-        "casinoExitHint",
-        "",
-        "Pressione 'E' para sair do cassino"
+      "casinoExitHint",
+      "",
+      "Pressione 'E' para sair do cassino"
       );
     }
   } else if (dialogManager.type === "casinoExitHint") {
     nearCasinoExit = false;
     dialogManager.hide();
   }
-
+  
+  if (currentMap === "casinoInterno" && pig.x >= 598 && pig.x <= 1114) {
+    if (!dialogManager.active && !interactedWithSlotMachine) {
+      dialogManager.show(
+      "slotMachineHint",
+      "Máquina de Caça-Níquel",
+      "Pressione 'E' para jogar por R$ 20,00"
+      );
+    }
+    nearSlotMachine = true;
+  } else {
+    if (dialogManager.type === "slotMachineHint" || dialogManager.type === "slotMachine") {
+      dialogManager.hide();
+    }
+    nearSlotMachine = false;
+    interactedWithSlotMachine = false;
+  }
+  
   // Saída da sala (lado esquerdo)
   if (currentMap === "sala" && pig.x <= 100) {
     nearRoomExit = true;
@@ -1239,7 +1371,7 @@ function update() {
     nearRoomExit = false;
     dialogManager.hide();
   }
-
+  
   // Atualiza o diálogo (fade)
   dialogManager.update();
 }
@@ -1260,10 +1392,10 @@ function drawRoundedRect(x, y, width, height, radius) {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  
   // Desenhar fundo
   ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
-
+  
   // Desenhar personagem
   if (!hidePig) {
     ctx.save();
@@ -1276,29 +1408,56 @@ function draw() {
     }
     ctx.restore();
   }
-
+  
   // Desenha diálogo gerenciado pelo dialogManager
   dialogManager.draw(ctx, canvas);
-
+  
   // Estilo do HUD (interface gráfica)
   const layoutWidth = 250;
   const layoutHeight = 80;
   const padding = 10;
-
+  
   ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
   drawRoundedRect(padding, padding, layoutWidth, layoutHeight, 10);
   ctx.fill();
-
+  
   ctx.strokeStyle = "rgb(80, 130, 70)";
   ctx.lineWidth = 2;
   ctx.stroke();
-
+  
   ctx.fillStyle = "white";
   ctx.font = "16px sans-serif";
   ctx.fillText(`Mapa: ${currentMap}`, padding + 10, padding + 25);
   ctx.fillText(`X: ${Math.round(pig.x)}`, padding + 10, padding + 45);
   ctx.fillText(`Y: ${Math.round(pig.y)}`, padding + 10, padding + 65);
+  
+  if (showSlotResults && currentSlotResults.length === 3) {
+    const iconSize = 120; // maior e mais visível
+    const spacing = 40;
+    const totalWidth = iconSize * 3 + spacing * 2;
+    const startX = (canvas.width - totalWidth) / 2;
+    const y = canvas.height * 0.25;
+    
+    currentSlotResults.forEach((symbol, i) => {
+      const x = startX + i * (iconSize + spacing);
+      ctx.drawImage(slotIcons[symbol.name], x, y, iconSize, iconSize);
+    });
+  }
 }
+
+const slotIcons = {
+  bacon: new Image(),
+  cofre: new Image(),
+  limonada: new Image(),
+  moeda: new Image(),
+  porco: new Image(),
+};
+
+slotIcons.bacon.src = "./imagens/slot-machine/bacon.png";
+slotIcons.cofre.src = "./imagens/slot-machine/cofre.png";
+slotIcons.limonada.src = "./imagens/slot-machine/limonada.png";
+slotIcons.moeda.src = "./imagens/slot-machine/moeda.png";
+slotIcons.porco.src = "./imagens/slot-machine/porco.png";
 
 function gameLoop() {
   update();
