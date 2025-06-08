@@ -144,7 +144,7 @@ const pig = {
   y: 0,
   width: 200,
   height: 200,
-  speed: 6,
+  speed: 20,
   velocityY: 0,
   isJumping: false,
   direction: "right",
@@ -383,36 +383,18 @@ const dialogManager = {
       });
     }
     
+    // Jogabilidade da Slot Machine do cassino
     if (showSlotResults && currentSlotResults.length === 3) {
       const iconSize = 120;
       const spacing = 40;
       const totalWidth = iconSize * 3 + spacing * 2;
       const startX = (canvas.width - totalWidth) / 2;
-      const y = canvas.height * 0.25;
+      const y = canvas.height / 3 + 45; 
       
-      currentSlotResults.forEach((symbol, i) => {
-        const x = startX + i * (iconSize + spacing);
+      currentSlotResults.forEach((symbol, index) => {
+        const x = startX + index * (iconSize + spacing);
         ctx.drawImage(slotIcons[symbol.name], x, y, iconSize, iconSize);
-      });
-      
-      // Mostrar texto acima das imagens
-      ctx.font = "bold 28px sans-serif";
-      ctx.fillStyle = "white";
-      ctx.textAlign = "center";
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 3;
-      
-      const message =
-      dialogManager.type === "slotWin"
-      ? "Você ganhou!😎 + R$ 40,00"
-      : dialogManager.type === "slotLose"
-      ? "Você perdeu!😥"
-      : "";
-      
-      if (message) {
-        ctx.strokeText(message, canvas.width / 2, y - 30);
-        ctx.fillText(message, canvas.width / 2, y - 30);
-      }
+      });  
     }
     ctx.restore();
   }
@@ -671,9 +653,9 @@ document.addEventListener("keydown", (e) => {
     }
     
     if (
-    waitingWakeUpDismiss &&
-    dialogManager.active &&
-    dialogManager.type === "wakeUp"
+      waitingWakeUpDismiss &&
+      dialogManager.active &&
+      dialogManager.type === "wakeUp"
     ) {
       dialogManager.hide();
       setTimeout(() => {
@@ -971,6 +953,7 @@ document.addEventListener("keydown", (e) => {
       dialogManager.hide();
     }
     
+    // Interação com as máquinas do cassino
     if (currentMap === "casinoInterno" && nearSlotMachine) {
       if (dialogManager.active && dialogManager.type === "slotMachine") {
         if (playerMoney >= 20) {
@@ -978,7 +961,11 @@ document.addEventListener("keydown", (e) => {
           moneySpentToday += 20;
           updateMoneyDisplay();
           
-          dialogManager.show("slotRolling", "Girando... ⏳", "⏳");
+          dialogManager.show(
+            "slotRolling",
+            "Girando... ⏳",
+            " "
+          );
           
           let results = ["❓", "❓", "❓"];
           let spinInterval = setInterval(() => {
@@ -998,9 +985,9 @@ document.addEventListener("keydown", (e) => {
               playerMoney += reward;
               moneyEarnedToday += reward;
               updateMoneyDisplay();
-              dialogManager.show("slotWin", "", "");
+              dialogManager.show("slotWin", "Você ganhou! 😎", "+ R$ 100,00");
             } else {
-              dialogManager.show("slotLose", "", "");
+              dialogManager.show("slotLose", "Você perdeu! 😥", " ");
             }
             
             // Mostra os símbolos por 2s, depois esconde tudo
@@ -1008,14 +995,14 @@ document.addEventListener("keydown", (e) => {
               showSlotResults = false;
               currentSlotResults = [];
               dialogManager.hide();
-            }, 2000);
+            }, 3000);
           }, 5000); // após 5 segundos, exibe o resultado
           
         } else {
           dialogManager.show(
           "slotNoMoney",
           "Dinheiro insuficiente!",
-          "Você precisa de R$ 20,00 para jogar."
+          "Você precisa de R$ 20,00\n para jogar."
           );
         }
       } else {
@@ -1329,7 +1316,6 @@ function update() {
   }
   
   // Saída do cassino (lado esquerdo)
-  // Saída do cassino (lado esquerdo)
   if (currentMap === "casinoInterno" && pig.x <= 100) {
     nearCasinoExit = true;
     if (!dialogManager.active) {
@@ -1344,12 +1330,12 @@ function update() {
     dialogManager.hide();
   }
   
-  if (currentMap === "casinoInterno" && pig.x >= 598 && pig.x <= 1114) {
+  if (currentMap === "casinoInterno" && isNearCenter()) {
     if (!dialogManager.active && !interactedWithSlotMachine) {
       dialogManager.show(
       "slotMachineHint",
       "Máquina de Caça-Níquel",
-      "Pressione 'E' para jogar por R$ 20,00"
+      "Pressione 'E' para jogar\n por R$ 20,00"
       );
     }
     nearSlotMachine = true;
@@ -1430,19 +1416,7 @@ function draw() {
   ctx.fillText(`Mapa: ${currentMap}`, padding + 10, padding + 25);
   ctx.fillText(`X: ${Math.round(pig.x)}`, padding + 10, padding + 45);
   ctx.fillText(`Y: ${Math.round(pig.y)}`, padding + 10, padding + 65);
-  
-  if (showSlotResults && currentSlotResults.length === 3) {
-    const iconSize = 120; // maior e mais visível
-    const spacing = 40;
-    const totalWidth = iconSize * 3 + spacing * 2;
-    const startX = (canvas.width - totalWidth) / 2;
-    const y = canvas.height * 0.25;
-    
-    currentSlotResults.forEach((symbol, i) => {
-      const x = startX + i * (iconSize + spacing);
-      ctx.drawImage(slotIcons[symbol.name], x, y, iconSize, iconSize);
-    });
-  }
+
 }
 
 const slotIcons = {
