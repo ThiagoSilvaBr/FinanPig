@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function showNextImage() {
     if (skip || index >= cutsceneImages.length) {
       cutsceneContainer.style.display = "none";
+      isCutscenePlaying = false;
       startGame();
       return;
     }
@@ -75,6 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   
   function playCutscene() {
+    isCutscenePlaying = true;
     index = 0;
     skip = false;
     cutsceneContainer.style.display = "block";
@@ -87,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
     clearTimeout(currentTimeout2);
     fadeOverlay.style.opacity = 0;
     cutsceneContainer.style.display = "none";
+    isCutscenePlaying = false;
     startGame();
     audioManager.playMusic(currentMap);
   });
@@ -203,7 +206,7 @@ function switchMap(direction) {
       dialogManager.show(
       "warningDia4",
       "O tempo está acabando!",
-      "Você precisa juntar R$ 400,00 \naté o final do dia!\n\nPressione 'E' para continuar"
+      "Você precisa juntar R$ 300,00 \naté amanhã!\n\nPressione 'E' para continuar"
       );
     }
     
@@ -218,6 +221,8 @@ const keys = {
   ArrowRight: false,
 };
 
+let isCutscenePlaying = false;
+
 let nearLemonade = false;
 let interactedWithLemonade = false;
 let justClosedLemonadeDialog = false;
@@ -228,7 +233,9 @@ let interactedWithDoor = false;
 let justClosedDoorDialog = false;
 
 let nearBoss = false;
-let specialHouse = false;
+let nearMom = false;
+let interactedWithMom = false;
+let justClosedMomDialog = false;
 
 let nearBed = false;
 let interactedWithBed = false;
@@ -264,9 +271,9 @@ let currentDay = 1;
 
 let nearSlotMachine = false;
 let interactedWithSlotMachine = false;
-
 let currentSlotResults = [];
 let showSlotResults = false;
+let slotIsSpining = false;
 
 const dialogManager = {
   active: false,
@@ -398,10 +405,8 @@ const dialogManager = {
     }
     ctx.restore();
   }
-  
-  // Mantenha a função wrapText como a última versão corrigida que eu te passei.
-  // Certifique-se de que ela está DECLARADA FORA de qualquer outro método ou classe.
-}
+}  
+
 function wrapText(ctx, text, maxWidth) {
   const lines = [];
   let currentLine = '';
@@ -499,6 +504,17 @@ function isNearCenter(threshold = 0.06) {
   return pig.x + pig.width >= center - range && pig.x <= center + range;
 }
 
+// Pedidos diários da mãe do personagem
+const momRequests = {
+  1: { item: "uma limonada", type: "lemonade"},
+  2: { item: "itens de saúde", type: "leftShop"},
+  3: { item: "mantimentos", type: "rightShop"},
+  4: { item: "itens de higiene", type: "leftShop"},
+  5: { item: "mantimentos", type: "rightShop"}
+};
+
+let itemDeliveredToday = false;
+
 // Função para evitar bug de não conseguir entrar mais de uma vez nos mapas internos, dentre outros bugs
 function resetInteractionFlags() {
   justClosedLemonadeDialog = false;
@@ -528,6 +544,10 @@ function resetInteractionFlags() {
   justClosedCasinoDoorDialog = false;
   interactedWithCasinoDoor = false;
   nearCasinoDoor = false;
+
+  justClosedMomDialog = false;
+  interactedWithMom = false;
+  nearMom = false;
   
   justClosedBedDialog = false;
   interactedWithBed = false;
@@ -555,6 +575,9 @@ function playSlotMachine() {
 }
 
 document.addEventListener("keydown", (e) => {
+  // Bloqueia qualquer tecla durante a cutscene
+  if (isCutscenePlaying) return;
+
   if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
   
   // Impede ações enquanto estiver "No trabalho..."
@@ -587,39 +610,39 @@ document.addEventListener("keydown", (e) => {
       switch (closedType) {
         case "lemonade":
         case "lemonadeHint":
-        justClosedLemonadeDialog = true;
-        setTimeout(() => (justClosedLemonadeDialog = false), 500);
-        break;
+          justClosedLemonadeDialog = true;
+          setTimeout(() => (justClosedLemonadeDialog = false), 500);
+          break;
         case "door":
         case "doorHint":
-        justClosedDoorDialog = true;
-        setTimeout(() => (justClosedDoorDialog = false), 500);
-        break;
+          justClosedDoorDialog = true;
+          setTimeout(() => (justClosedDoorDialog = false), 500);
+          break;
         case "office":
         case "alreadyWorked":
-        justClosedOfficeDialog = true;
-        setTimeout(() => (justClosedOfficeDialog = false), 500);
-        break;
+          justClosedOfficeDialog = true;
+          setTimeout(() => (justClosedOfficeDialog = false), 500);
+          break;
         case "endWork":
-        justClosedOfficeDialog = true;
-        hidePig = false;
-        setTimeout(() => (justClosedOfficeDialog = false), 500);
-        break;
+          justClosedOfficeDialog = true;
+          hidePig = false;
+          setTimeout(() => (justClosedOfficeDialog = false), 500);
+          break;
         case "shoppingDoor":
         case "shoppingDoorHint":
-        justClosedShoppingDoorDialog = true;
-        setTimeout(() => (justClosedShoppingDoorDialog = false), 500);
-        break;
+          justClosedShoppingDoorDialog = true;
+          setTimeout(() => (justClosedShoppingDoorDialog = false), 500);
+          break;
         case "casinoDoor":
         case "casinoDoorHint":
-        justClosedCasinoDoorDialog = true;
-        setTimeout(() => (justClosedCasinoDoorDialog = false), 500);
-        break;
+          justClosedCasinoDoorDialog = true;
+          setTimeout(() => (justClosedCasinoDoorDialog = false), 500);
+          break;
         case "bed":
         case "bedHint":
-        justClosedBedDialog = true;
-        setTimeout(() => (justClosedBedDialog = false), 500);
-        break;
+          justClosedBedDialog = true;
+          setTimeout(() => (justClosedBedDialog = false), 500);
+          break;
       }
     }
   }
@@ -677,6 +700,11 @@ document.addEventListener("keydown", (e) => {
           moneySpentToday += 25;
           updateMoneyDisplay();
           updateDayDisplay();
+
+          if (momRequests[currentDay].type === "lemonade") {
+            itemDeliveredToday = true;
+          }
+
           dialogManager.show(
           "lemonadeSuccess",
           "Você comprou uma limonada!",
@@ -702,7 +730,8 @@ document.addEventListener("keydown", (e) => {
         currentMap = "sala";
         loadMap("mapa-sala");
         resizeCanvas();
-        pig.x = canvas.width / 2 - pig.width / 2;
+        // Personagem spawna à direita da sala
+        pig.x = canvas.width * 0.9 - pig.width;
         pig.y = sidewalkY;
         dialogManager.hide();
       } else {
@@ -714,8 +743,52 @@ document.addEventListener("keydown", (e) => {
         interactedWithDoor = true;
       }
     }
+
+    // Ver o que a mãe do personagem precisa em cada dia
+    if (currentMap === "sala" && nearMom){
+      if (dialogManager.active && dialogManager.type === "momHint"){
+        dialogManager.hide();
+
+        const request = momRequests[currentDay];
+        if (itemDeliveredToday) {
+          dialogManager.show(
+            "momThanks",
+            "Mamãe",
+            "Muito obrigada por comprar\n o que eu pedi meu filho! ❤"
+          );
+        } else {
+          dialogManager.show(
+            "momRequest",
+            "Mamãe",
+            `Filho, você pode comprar\n ${request.item} para mim,\n por favor?`
+          );
+        }
+      } else if (dialogManager.type === "momRequest" && !itemDeliveredToday){
+        dialogManager.hide();
+      }
+    }
     
     if (currentMap === "quarto" && nearBed) {
+      // Impede o personagem de dormir quando for dia 5 (final)
+      if (currentDay === 5) {
+        dialogManager.show(
+          "noSleepFinalDay",
+          "Não é possível dormir!",
+          "Você precisa se encontrar\n com o Lobo Lobato hoje."
+        );
+        return;
+      }
+
+      // Impede o personagem dormir sem comprar o que a mãe precisa
+      if (!itemDeliveredToday) {
+        dialogManager.show(
+          "momNeedsItem",
+          "Mamãe ainda precisa da sua ajuda!",
+          "Compre o item que ela pediu\n antes de dormir."
+        );
+        return;
+      }
+
       if (dialogManager.active && dialogManager.type === "bed") {
         const dailyExpense = 20;
         updateMoneyDisplay();
@@ -736,6 +809,7 @@ document.addEventListener("keydown", (e) => {
           moneyEarnedToday = 0;
           moneySpentToday = 0;
           workedToday = false;
+          itemDeliveredToday = false;
           
           dialogManager.show(
           "wakeUp",
@@ -756,6 +830,7 @@ document.addEventListener("keydown", (e) => {
         );
         interactedWithBed = true;
       }
+
     } else if (currentMap === "trabalho" && nearOffice) {
       if (workedToday) {
         dialogManager.show(
@@ -768,14 +843,14 @@ document.addEventListener("keydown", (e) => {
         dialogManager.hide();
         dialogManager.show("working", "No trabalho...", "...");
         setTimeout(() => {
-          playerMoney += 50;
-          moneyEarnedToday += 50;
+          playerMoney += 93;
+          moneyEarnedToday += 93;
           updateMoneyDisplay();
           workedToday = true;
           dialogManager.show(
           "endWork",
           "Fim do expediente!",
-          "Você ganhou R$ 50,00!\nPressione 'ESC' para sair"
+          "Você ganhou R$ 93,00!\nPressione 'ESC' para sair"
           );
         }, 2000);
       } else {
@@ -812,6 +887,11 @@ document.addEventListener("keydown", (e) => {
           playerMoney -= 30;
           moneySpentToday += 30;
           updateMoneyDisplay();
+
+          if (momRequests[currentDay].type === "leftShop") {
+            itemDeliveredToday = true;
+          }
+
           dialogManager.show(
           "leftShopSuccess",
           "Você comprou itens de Saúde e Higiene!",
@@ -840,62 +920,11 @@ document.addEventListener("keydown", (e) => {
           playerMoney -= 40;
           moneySpentToday += 40;
           updateMoneyDisplay();
-          dialogManager.show(
-          "rightShopSuccess",
-          "Você comprou Mantimentos!",
-          "Barriga cheia!"
-          );
-        } else {
-          dialogManager.show(
-          "rightShopFail",
-          "Dinheiro insuficiente!",
-          "Os Mantimentos custam R$ 40,00."
-          );
-        }
-      } else {
-        dialogManager.show(
-        "rightShop",
-        "Comprar Mantimentos por R$ 40,00?",
-        "'E' para confirmar\n'ESC' para cancelar"
-        );
-        interactedWithRightShopItem = true;
-      }
-    }
-    
-    if (currentMap === "shoppingInterno" && nearLeftShopItem) {
-      if (dialogManager.active && dialogManager.type === "leftShop") {
-        if (playerMoney >= 30) {
-          playerMoney -= 30;
-          moneySpentToday += 30;
-          updateMoneyDisplay();
-          dialogManager.show(
-          "leftShopSuccess",
-          "Você comprou itens de Saúde e Higiene!",
-          "Cuidado é tudo. :)"
-          );
-        } else {
-          dialogManager.show(
-          "leftShopFail",
-          "Dinheiro insuficiente!",
-          "Os itens custam R$ 30,00."
-          );
-        }
-      } else {
-        dialogManager.show(
-        "leftShop",
-        "Comprar itens de Saúde e Higiene por R$ 30,00?",
-        "'E' para confirmar\n'ESC' para cancelar"
-        );
-        interactedWithLeftShopItem = true;
-      }
-    }
-    
-    if (currentMap === "shoppingInterno" && nearRightShopItem) {
-      if (dialogManager.active && dialogManager.type === "rightShop") {
-        if (playerMoney >= 40) {
-          playerMoney -= 40;
-          moneySpentToday += 40;
-          updateMoneyDisplay();
+
+          if (momRequests[currentDay].type === "rightShop") {
+            itemDeliveredToday = true;
+          }
+
           dialogManager.show(
           "rightShopSuccess",
           "Você comprou Mantimentos!",
@@ -960,7 +989,8 @@ document.addEventListener("keydown", (e) => {
           playerMoney -= 20;
           moneySpentToday += 20;
           updateMoneyDisplay();
-          
+
+          slotIsSpining = true;  
           dialogManager.show(
             "slotRolling",
             "Girando... ⏳",
@@ -985,7 +1015,7 @@ document.addEventListener("keydown", (e) => {
               playerMoney += reward;
               moneyEarnedToday += reward;
               updateMoneyDisplay();
-              dialogManager.show("slotWin", "Você ganhou! 😎", "+ R$ 100,00");
+              dialogManager.show("slotWin", "Você ganhou! 😎 + R$ 100,00", " ");
             } else {
               dialogManager.show("slotLose", "Você perdeu! 😥", " ");
             }
@@ -995,7 +1025,8 @@ document.addEventListener("keydown", (e) => {
               showSlotResults = false;
               currentSlotResults = [];
               dialogManager.hide();
-            }, 3000);
+              slotIsSpining = false;  
+            }, 2000);
           }, 5000); // após 5 segundos, exibe o resultado
           
         } else {
@@ -1036,8 +1067,8 @@ document.addEventListener("keyup", (e) => {
 });
 
 function update() {
-  // Impede movimentação do personagem enquanto está no trabalho
-  if (dialogManager.type === "working") return;
+  // Impede movimentação do personagem enquanto está no trabalho ou girando a slot machine
+  if (dialogManager.type === "working" || slotIsSpining) return;
   
   let moveX = 0;
   
@@ -1080,7 +1111,6 @@ function update() {
   if (currentMap === "casa" && currentDay === 5 && !nearBoss) {
     loadMap("mapa-casa-final");
     resizeCanvas();
-    specialHouse = true;
   }
 
   // Condicionais para detectar proximidade com os itens/mapas
@@ -1190,7 +1220,7 @@ function update() {
   }
   
   // Balão de interação com a prateleira esquerda do shopping
-  if (currentMap === "shoppingInterno" && pig.x >= 101 && pig.x <= 200) {
+  if (currentMap === "shoppingInterno" && pig.x >= 101 && pig.x <= 280) {
     nearLeftShopItem = true;
     // Se o balão de diálogo não está ativo e o jogador ainda não interagiu
     if (!dialogManager.active && !interactedWithLeftShopItem) {
@@ -1201,7 +1231,11 @@ function update() {
       );
     }
     // Se não está mais perto do item, mas o balão está visível
-  } else if (dialogManager.type === "leftShopHint") {
+  } else if (
+    dialogManager.type === "leftShopHint" ||
+    dialogManager.type == "leftShopSuccess" ||
+    dialogManager.type == "leftShopFail"
+  ) {
     nearLeftShopItem = false; // Marca que o jogador saiu de perto do balão
     interactedWithLeftShopItem = false; // Reseta interação
     dialogManager.hide(); // Esconde o balão
@@ -1210,7 +1244,7 @@ function update() {
   // Balão de interação com a prateleira direita do shopping
   if (
   currentMap === "shoppingInterno" &&
-  pig.x + pig.width >= canvas.width - 350
+  pig.x + pig.width >= canvas.width - 420
   ) {
     nearRightShopItem = true;
     if (!dialogManager.active && !interactedWithRightShopItem) {
@@ -1220,42 +1254,11 @@ function update() {
       "Pressione 'E' para ver \nMantimentos por R$ 40,00"
       );
     }
-  } else if (dialogManager.type === "rightShopHint") {
-    nearRightShopItem = false;
-    interactedWithRightShopItem = false;
-    dialogManager.hide();
-  }
-  
-  // Balão de interação com a prateleira esquerda do shopping
-  if (currentMap === "shoppingInterno" && pig.x >= 101 && pig.x <= 200) {
-    nearLeftShopItem = true;
-    if (!dialogManager.active && !interactedWithLeftShopItem) {
-      dialogManager.show(
-      "leftShopHint",
-      "Saúde e Higiene",
-      "Pressione 'E' para ver produtos de Saúde e Higiene por R$ 30,00"
-      );
-    }
-  } else if (dialogManager.type === "leftShopHint") {
-    nearLeftShopItem = false;
-    interactedWithLeftShopItem = false;
-    dialogManager.hide();
-  }
-  
-  // Balão de interação com a prateleira direita do shopping
-  if (
-  currentMap === "shoppingInterno" &&
-  pig.x + pig.width >= canvas.width - 350
+  } else if (
+    dialogManager.type === "rightShopHint" ||
+    dialogManager.type == "rightShopSuccess" ||
+    dialogManager.type == "rightShopFail"
   ) {
-    nearRightShopItem = true;
-    if (!dialogManager.active && !interactedWithRightShopItem) {
-      dialogManager.show(
-      "rightShopHint",
-      "Mantimentos",
-      "Pressione 'E' para ver Mantimentos por R$ 40,00"
-      );
-    }
-  } else if (dialogManager.type === "rightShopHint") {
     nearRightShopItem = false;
     interactedWithRightShopItem = false;
     dialogManager.hide();
@@ -1281,6 +1284,26 @@ function update() {
       dialogManager.hide();
     }
   }
+
+  if (currentMap === "sala" && isNearCenter()) {
+    nearMom = true;
+    if (!dialogManager.active && !justClosedMomDialog) {
+      dialogManager.show(
+        "momHint",
+        "Mamãe!",
+        "Pressione 'E' para interagir"
+      );
+    }
+  } else {
+    nearMom = false;
+    if (
+      dialogManager.type === "momHint" ||
+      dialogManager.type === "momRequest" ||
+      dialogManager.type === "momThanks" 
+    ){
+      dialogManager.hide();
+    }
+  }
   
   // Interação com a cama no quarto
   if (currentMap === "quarto" && isNearCenter()) {
@@ -1295,7 +1318,12 @@ function update() {
   } else {
     nearBed = false;
     interactedWithBed = false;
-    if (dialogManager.type === "bed" || dialogManager.type === "bedHint") {
+    if (
+      dialogManager.type === "bed" ||
+      dialogManager.type === "bedHint" ||
+      dialogManager.type === "noSleepFinalDay" ||
+      dialogManager.type === "momNeedsItem"
+    ) {
       dialogManager.hide();
     }
   }
