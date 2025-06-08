@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function showNextImage() {
     if (skip || index >= cutsceneImages.length) {
       cutsceneContainer.style.display = "none";
+      isCutscenePlaying = false;
       startGame();
       return;
     }
@@ -75,6 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   
   function playCutscene() {
+    isCutscenePlaying = true;
     index = 0;
     skip = false;
     cutsceneContainer.style.display = "block";
@@ -87,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
     clearTimeout(currentTimeout2);
     fadeOverlay.style.opacity = 0;
     cutsceneContainer.style.display = "none";
+    isCutscenePlaying = false;
     startGame();
     audioManager.playMusic(currentMap);
   });
@@ -218,6 +221,8 @@ const keys = {
   ArrowRight: false,
 };
 
+let isCutscenePlaying = false;
+
 let nearLemonade = false;
 let interactedWithLemonade = false;
 let justClosedLemonadeDialog = false;
@@ -228,7 +233,6 @@ let interactedWithDoor = false;
 let justClosedDoorDialog = false;
 
 let nearBoss = false;
-let specialHouse = false;
 
 let nearBed = false;
 let interactedWithBed = false;
@@ -264,9 +268,9 @@ let currentDay = 1;
 
 let nearSlotMachine = false;
 let interactedWithSlotMachine = false;
-
 let currentSlotResults = [];
 let showSlotResults = false;
+let slotIsSpining = false;
 
 const dialogManager = {
   active: false,
@@ -398,10 +402,8 @@ const dialogManager = {
     }
     ctx.restore();
   }
-  
-  // Mantenha a função wrapText como a última versão corrigida que eu te passei.
-  // Certifique-se de que ela está DECLARADA FORA de qualquer outro método ou classe.
-}
+}  
+
 function wrapText(ctx, text, maxWidth) {
   const lines = [];
   let currentLine = '';
@@ -555,6 +557,9 @@ function playSlotMachine() {
 }
 
 document.addEventListener("keydown", (e) => {
+  // Bloqueia qualquer tecla durante a cutscene
+  if (isCutscenePlaying) return;
+
   if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
   
   // Impede ações enquanto estiver "No trabalho..."
@@ -716,6 +721,16 @@ document.addEventListener("keydown", (e) => {
     }
     
     if (currentMap === "quarto" && nearBed) {
+      // Impede o personagem de dormir quando for dia 5 (final)
+      if (currentDay === 5) {
+        dialogManager.show(
+          "noSleepFinalDay",
+          "Não é possível dormir!",
+          "Você precisa se encontrar\n com o Lobo Lobato hoje."
+        );
+        return;
+      }
+
       if (dialogManager.active && dialogManager.type === "bed") {
         const dailyExpense = 20;
         updateMoneyDisplay();
@@ -756,6 +771,7 @@ document.addEventListener("keydown", (e) => {
         );
         interactedWithBed = true;
       }
+
     } else if (currentMap === "trabalho" && nearOffice) {
       if (workedToday) {
         dialogManager.show(
@@ -960,7 +976,8 @@ document.addEventListener("keydown", (e) => {
           playerMoney -= 20;
           moneySpentToday += 20;
           updateMoneyDisplay();
-          
+
+          slotIsSpining = true;  
           dialogManager.show(
             "slotRolling",
             "Girando... ⏳",
@@ -985,7 +1002,7 @@ document.addEventListener("keydown", (e) => {
               playerMoney += reward;
               moneyEarnedToday += reward;
               updateMoneyDisplay();
-              dialogManager.show("slotWin", "Você ganhou! 😎", "+ R$ 100,00");
+              dialogManager.show("slotWin", "Você ganhou! 😎 + R$ 100,00", " ");
             } else {
               dialogManager.show("slotLose", "Você perdeu! 😥", " ");
             }
@@ -995,7 +1012,8 @@ document.addEventListener("keydown", (e) => {
               showSlotResults = false;
               currentSlotResults = [];
               dialogManager.hide();
-            }, 3000);
+              slotIsSpining = false;  
+            }, 2000);
           }, 5000); // após 5 segundos, exibe o resultado
           
         } else {
@@ -1036,8 +1054,8 @@ document.addEventListener("keyup", (e) => {
 });
 
 function update() {
-  // Impede movimentação do personagem enquanto está no trabalho
-  if (dialogManager.type === "working") return;
+  // Impede movimentação do personagem enquanto está no trabalho ou girando a slot machine
+  if (dialogManager.type === "working" || slotIsSpining) return;
   
   let moveX = 0;
   
@@ -1080,7 +1098,6 @@ function update() {
   if (currentMap === "casa" && currentDay === 5 && !nearBoss) {
     loadMap("mapa-casa-final");
     resizeCanvas();
-    specialHouse = true;
   }
 
   // Condicionais para detectar proximidade com os itens/mapas
@@ -1295,7 +1312,11 @@ function update() {
   } else {
     nearBed = false;
     interactedWithBed = false;
-    if (dialogManager.type === "bed" || dialogManager.type === "bedHint") {
+    if (
+      dialogManager.type === "bed" ||
+      dialogManager.type === "bedHint" ||
+      dialogManager.type === "noSleepFinalDay"
+    ) {
       dialogManager.hide();
     }
   }
