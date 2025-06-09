@@ -155,7 +155,7 @@ const pig = {
   y: 0,
   width: 200,
   height: 200,
-  speed: 6,
+  speed: 25,
   velocityY: 0,
   isJumping: false,
   direction: "right",
@@ -216,7 +216,7 @@ function switchMap(direction) {
       dialogManager.show(
       "warningDia4",
       "O tempo está acabando!",
-      "Você precisa juntar R$ 300,00 \naté amanhã!\n\nPressione 'E' para continuar"
+      "Você precisa juntar R$ 400,00 \naté amanhã!\n\nPressione 'E' para continuar"
       );
     }
     
@@ -243,6 +243,9 @@ let interactedWithDoor = false;
 let justClosedDoorDialog = false;
 
 let nearBoss = false;
+let talkedToBoss = false;
+let bossDialogStep = 0;
+
 let nearMom = false;
 let interactedWithMom = false;
 let justClosedMomDialog = false;
@@ -706,6 +709,47 @@ document.addEventListener("keydown", (e) => {
       return;
     }
     
+    if (currentMap === "casa" && currentDay === 5 && nearBoss) {
+      // Impede falar com o lobo se não comprou mantimentos
+      if (!itemDeliveredToday) {
+        dialogManager.show(
+          "bossBlocked",
+          "Você não pode fazer isso ainda!",
+          "Sua mãe precisa de ajuda!\nCompre os mantimentos antes de\nfalar com o lobo\n\nPressione 'ESC' para sair"
+        );
+        return;
+      }
+
+      // Conversa com o boss em dois passos
+      if (bossDialogStep === 0) {
+        dialogManager.show(
+          "boss1",
+          "Lobo Lobato",
+          "Finalmente chegou o\ndia do pagamento.\nEspero que tenha juntado\nmeus R$ 400,00\nPressione 'E' para continuar"
+        );
+        bossDialogStep = 1;
+        return;
+      }
+
+      if (bossDialogStep === 1) {
+        dialogManager.show(
+          "boss2",
+          "Lobo Lobato",
+          "Me acompanhe... Senhor Pig.\nPressione 'E' para ter sua última conversa"
+        );
+        bossDialogStep = 2;
+        return;
+      }
+
+      if (bossDialogStep === 2) {
+        talkedToBoss = true;
+        dialogManager.hide();
+        // colocar a última cutscene aqui
+        triggerFinalCutscene(); // crie essa função se quiser
+      }
+      return;
+    }
+
     if (currentMap === "casa" && nearLemonade) {
       if (dialogManager.active && dialogManager.type === "lemonade") {
         if (playerMoney >= 25) {
@@ -1175,16 +1219,23 @@ function update() {
     pig.x + pig.width >= canvas.width - 300
   ) {
     nearBoss = true;
-    if (!dialogManager.active){
+    if (!dialogManager.active && bossDialogStep === 0){
       dialogManager.show(
         "finalBossHint",
         "Lobo Lobato te espera...",
         "Pressione 'E' para interagir"
       );
     }
-  } else if (dialogManager.type === "finalBossHint") {
-    nearBoss = false;
-    dialogManager.hide();
+  } else {
+    if (dialogManager.type === "finalBossHint" ||
+      dialogManager.type === "boss1" ||
+      dialogManager.type === "boss2" ||
+      dialogManager.type === "bossBlocked"
+    ) { 
+      dialogManager.hide();
+    }
+      nearBoss = false;
+      bossDialogStep = 0; // Reinicia os diálogos ao sair de perto
   }
 
   // Interação com escritório no mapa de trabalho
