@@ -136,7 +136,13 @@ const assets = {
   pig: new Image(),
 };
 
-assets.pig.src = "./imagens/personagens/personagem-lateral-direita.png";
+assets.pigWalk1 = new Image();
+assets.pigWalk2 = new Image();
+assets.pigIdle = new Image();
+
+assets.pigWalk1.src = "./imagens/personagens/personagem-andando-1.png";
+assets.pigWalk2.src = "./imagens/personagens/personagem-andando-2.png";
+assets.pigIdle.src = "./imagens/personagens/personagem-lateral-direita.png";
 
 function loadMap(mapName) {
   assets.background.src = `./imagens/mapas/${mapName}.png`;
@@ -147,10 +153,12 @@ const pig = {
   y: 0,
   width: 200,
   height: 200,
-  speed: 20,
+  speed: 6,
   velocityY: 0,
   isJumping: false,
   direction: "right",
+  currentWidth: 200,
+  currentHeight: 200,
 };
 
 const gravity = 0.5;
@@ -274,6 +282,9 @@ let interactedWithSlotMachine = false;
 let currentSlotResults = [];
 let showSlotResults = false;
 let slotIsSpining = false;
+
+let walkFrame = 0;
+let walkFrameCounter = 0;
 
 const dialogManager = {
   active: false,
@@ -843,14 +854,14 @@ document.addEventListener("keydown", (e) => {
         dialogManager.hide();
         dialogManager.show("working", "No trabalho...", "...");
         setTimeout(() => {
-          playerMoney += 93;
-          moneyEarnedToday += 93;
+          playerMoney += 113;
+          moneyEarnedToday += 113;
           updateMoneyDisplay();
           workedToday = true;
           dialogManager.show(
           "endWork",
           "Fim do expediente!",
-          "Você ganhou R$ 93,00!\nPressione 'ESC' para sair"
+          "Você ganhou R$ 113,00!\nPressione 'ESC' para sair"
           );
         }, 2000);
       } else {
@@ -985,9 +996,9 @@ document.addEventListener("keydown", (e) => {
     // Interação com as máquinas do cassino
     if (currentMap === "casinoInterno" && nearSlotMachine) {
       if (dialogManager.active && dialogManager.type === "slotMachine") {
-        if (playerMoney >= 20) {
-          playerMoney -= 20;
-          moneySpentToday += 20;
+        if (playerMoney >= 30) {
+          playerMoney -= 30;
+          moneySpentToday += 30;
           updateMoneyDisplay();
 
           slotIsSpining = true;  
@@ -1033,13 +1044,13 @@ document.addEventListener("keydown", (e) => {
           dialogManager.show(
           "slotNoMoney",
           "Dinheiro insuficiente!",
-          "Você precisa de R$ 20,00\n para jogar."
+          "Você precisa de R$ 30,00\n para jogar."
           );
         }
       } else {
         dialogManager.show(
         "slotMachine",
-        "Jogar na caça-níquel por R$ 20,00?",
+        "Jogar na caça-níquel por R$ 30,00?",
         "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
         );
         interactedWithSlotMachine = true;
@@ -1363,7 +1374,7 @@ function update() {
       dialogManager.show(
       "slotMachineHint",
       "Máquina de Caça-Níquel",
-      "Pressione 'E' para jogar\n por R$ 20,00"
+      "Pressione 'E' para jogar\n por R$ 40,00"
       );
     }
     nearSlotMachine = true;
@@ -1406,6 +1417,21 @@ function drawRoundedRect(x, y, width, height, radius) {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  let pigImage = assets.pigIdle;
+  pig.currentWidth = 200;
+  pig.currentHeight = 200;
+
+  if (!hidePig && (keys.ArrowLeft || keys.ArrowRight)) {
+    walkFrameCounter++;
+    if (walkFrameCounter >= 10) {
+      walkFrame = (walkFrame + 1) % 2;
+      walkFrameCounter = 0;
+    }
+    pigImage = walkFrame === 0 ? assets.pigWalk1 : assets.pigWalk2;
+    pig.currentWidth = 125;
+    pig.currentHeight = 198;
+  }
   
   // Desenhar fundo
   ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
@@ -1413,12 +1439,15 @@ function draw() {
   // Desenhar personagem
   if (!hidePig) {
     ctx.save();
+    const drawX = pig.x;
+    // Cálculo para a altura diminuir de cima pra baixo, e não o inverso.
+    const drawY = pig.y + (pig.height - pig.currentHeight); 
     if (pig.direction === "left") {
-      ctx.translate(pig.x + pig.width, pig.y);
+      ctx.translate(drawX + pig.currentWidth, drawY);
       ctx.scale(-1, 1);
-      ctx.drawImage(assets.pig, 0, 0, pig.width, pig.height);
+      ctx.drawImage(pigImage, 0, 0, pig.currentWidth, pig.currentHeight);
     } else {
-      ctx.drawImage(assets.pig, pig.x, pig.y, pig.width, pig.height);
+      ctx.drawImage(pigImage, drawX, drawY, pig.currentWidth, pig.currentHeight);
     }
     ctx.restore();
   }
@@ -1480,7 +1509,7 @@ function checkAllLoaded() {
 }
 
 assets.background.onload = checkAllLoaded;
-assets.pig.onload = checkAllLoaded;
+assets.pigIdle.onload = checkAllLoaded;
 
 loadMap("mapa-casa");
 
