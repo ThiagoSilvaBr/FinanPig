@@ -155,7 +155,7 @@ const pig = {
   y: 0,
   width: 200,
   height: 200,
-  speed: 25,
+  speed: 6,
   velocityY: 0,
   isJumping: false,
   direction: "right",
@@ -590,6 +590,7 @@ function playSlotMachine() {
   return [getRandom(), getRandom(), getRandom()];
 }
 
+// Função para rodar as cutscenes finais
 function triggerFinalCutscene() {
   isCutscenePlaying = true;
 
@@ -756,7 +757,7 @@ document.addEventListener("keydown", (e) => {
       if (bossDialogStep === 2) {
         talkedToBoss = true;
         dialogManager.hide();
-
+        // Chama função que rodará as cutscenes finais
         triggerFinalCutscene();
       }
       return;
