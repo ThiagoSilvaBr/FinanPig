@@ -139,10 +139,12 @@ const assets = {
 assets.pigWalk1 = new Image();
 assets.pigWalk2 = new Image();
 assets.pigIdle = new Image();
+assets.pigJump = new Image();
 
 assets.pigWalk1.src = "./imagens/personagens/personagem-andando-1.png";
 assets.pigWalk2.src = "./imagens/personagens/personagem-andando-2.png";
 assets.pigIdle.src = "./imagens/personagens/personagem-lateral-direita.png";
+assets.pigJump.src = "./imagens/personagens/personagem-pulando.png";
 
 function loadMap(mapName) {
   assets.background.src = `./imagens/mapas/${mapName}.png`;
@@ -1374,7 +1376,7 @@ function update() {
       dialogManager.show(
       "slotMachineHint",
       "Máquina de Caça-Níquel",
-      "Pressione 'E' para jogar\n por R$ 40,00"
+      "Pressione 'E' para jogar\n por R$ 30,00"
       );
     }
     nearSlotMachine = true;
@@ -1422,7 +1424,11 @@ function draw() {
   pig.currentWidth = 200;
   pig.currentHeight = 200;
 
-  if (!hidePig && (keys.ArrowLeft || keys.ArrowRight)) {
+  if (pig.isJumping) {
+    pigImage = assets.pigJump;
+    pig.currentWidth = 200;
+    pig.currentHeight = 200;
+  } else if (!hidePig && (keys.ArrowLeft || keys.ArrowRight)) {
     walkFrameCounter++;
     if (walkFrameCounter >= 10) {
       walkFrame = (walkFrame + 1) % 2;
