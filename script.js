@@ -139,10 +139,12 @@ const assets = {
 assets.pigWalk1 = new Image();
 assets.pigWalk2 = new Image();
 assets.pigIdle = new Image();
+assets.pigJump = new Image();
 
 assets.pigWalk1.src = "./imagens/personagens/personagem-andando-1.png";
 assets.pigWalk2.src = "./imagens/personagens/personagem-andando-2.png";
 assets.pigIdle.src = "./imagens/personagens/personagem-lateral-direita.png";
+assets.pigJump.src = "./imagens/personagens/personagem-pulando.png";
 
 function loadMap(mapName) {
   assets.background.src = `./imagens/mapas/${mapName}.png`;
@@ -214,7 +216,7 @@ function switchMap(direction) {
       dialogManager.show(
       "warningDia4",
       "O tempo está acabando!",
-      "Você precisa juntar R$ 300,00 \naté amanhã!\n\nPressione 'E' para continuar"
+      "Você precisa juntar R$ 400,00 \naté amanhã!\n\nPressione 'E' para continuar"
       );
     }
     
@@ -241,6 +243,9 @@ let interactedWithDoor = false;
 let justClosedDoorDialog = false;
 
 let nearBoss = false;
+let talkedToBoss = false;
+let bossDialogStep = 0;
+
 let nearMom = false;
 let interactedWithMom = false;
 let justClosedMomDialog = false;
@@ -585,6 +590,19 @@ function playSlotMachine() {
   return [getRandom(), getRandom(), getRandom()];
 }
 
+// Função para rodar as cutscenes finais
+function triggerFinalCutscene() {
+  isCutscenePlaying = true;
+
+  if (playerMoney >= 400) {
+    // Final bom
+    playCutscene("cutsceneFinalBom");
+  } else {
+    // Final ruim
+    playCutscene("cutsceneFinalRuim");
+  }
+}
+
 document.addEventListener("keydown", (e) => {
   // Bloqueia qualquer tecla durante a cutscene
   if (isCutscenePlaying) return;
@@ -704,6 +722,47 @@ document.addEventListener("keydown", (e) => {
       return;
     }
     
+    if (currentMap === "casa" && currentDay === 5 && nearBoss) {
+      // Impede falar com o lobo se não comprou mantimentos
+      if (!itemDeliveredToday) {
+        dialogManager.show(
+          "bossBlocked",
+          "Você não pode fazer isso ainda!",
+          "Sua mãe precisa de ajuda!\nCompre os mantimentos antes de\nfalar com o lobo\n\nPressione 'ESC' para sair"
+        );
+        return;
+      }
+
+      // Conversa com o boss em dois passos
+      if (bossDialogStep === 0) {
+        dialogManager.show(
+          "boss1",
+          "Lobo Lobato",
+          "Finalmente chegou o\ndia do pagamento.\nEspero que tenha juntado\nmeus R$ 400,00\nPressione 'E' para continuar"
+        );
+        bossDialogStep = 1;
+        return;
+      }
+
+      if (bossDialogStep === 1) {
+        dialogManager.show(
+          "boss2",
+          "Lobo Lobato",
+          "Me acompanhe... Senhor Pig.\nPressione 'E' para ter sua última conversa"
+        );
+        bossDialogStep = 2;
+        return;
+      }
+
+      if (bossDialogStep === 2) {
+        talkedToBoss = true;
+        dialogManager.hide();
+        // Chama função que rodará as cutscenes finais
+        triggerFinalCutscene();
+      }
+      return;
+    }
+
     if (currentMap === "casa" && nearLemonade) {
       if (dialogManager.active && dialogManager.type === "lemonade") {
         if (playerMoney >= 25) {
@@ -1173,16 +1232,23 @@ function update() {
     pig.x + pig.width >= canvas.width - 300
   ) {
     nearBoss = true;
-    if (!dialogManager.active){
+    if (!dialogManager.active && bossDialogStep === 0){
       dialogManager.show(
         "finalBossHint",
         "Lobo Lobato te espera...",
         "Pressione 'E' para interagir"
       );
     }
-  } else if (dialogManager.type === "finalBossHint") {
-    nearBoss = false;
-    dialogManager.hide();
+  } else {
+    if (dialogManager.type === "finalBossHint" ||
+      dialogManager.type === "boss1" ||
+      dialogManager.type === "boss2" ||
+      dialogManager.type === "bossBlocked"
+    ) { 
+      dialogManager.hide();
+    }
+      nearBoss = false;
+      bossDialogStep = 0; // Reinicia os diálogos ao sair de perto
   }
 
   // Interação com escritório no mapa de trabalho
@@ -1374,7 +1440,7 @@ function update() {
       dialogManager.show(
       "slotMachineHint",
       "Máquina de Caça-Níquel",
-      "Pressione 'E' para jogar\n por R$ 40,00"
+      "Pressione 'E' para jogar\n por R$ 30,00"
       );
     }
     nearSlotMachine = true;
@@ -1422,7 +1488,11 @@ function draw() {
   pig.currentWidth = 200;
   pig.currentHeight = 200;
 
-  if (!hidePig && (keys.ArrowLeft || keys.ArrowRight)) {
+  if (pig.isJumping) {
+    pigImage = assets.pigJump;
+    pig.currentWidth = 200;
+    pig.currentHeight = 200;
+  } else if (!hidePig && (keys.ArrowLeft || keys.ArrowRight)) {
     walkFrameCounter++;
     if (walkFrameCounter >= 10) {
       walkFrame = (walkFrame + 1) % 2;
