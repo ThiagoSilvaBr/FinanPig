@@ -590,6 +590,18 @@ function playSlotMachine() {
   return [getRandom(), getRandom(), getRandom()];
 }
 
+function triggerFinalCutscene() {
+  isCutscenePlaying = true;
+
+  if (playerMoney >= 400) {
+    // Final bom
+    playCutscene("cutsceneFinalBom");
+  } else {
+    // Final ruim
+    playCutscene("cutsceneFinalRuim");
+  }
+}
+
 document.addEventListener("keydown", (e) => {
   // Bloqueia qualquer tecla durante a cutscene
   if (isCutscenePlaying) return;
@@ -744,8 +756,8 @@ document.addEventListener("keydown", (e) => {
       if (bossDialogStep === 2) {
         talkedToBoss = true;
         dialogManager.hide();
-        // colocar a última cutscene aqui
-        triggerFinalCutscene(); // crie essa função se quiser
+
+        triggerFinalCutscene();
       }
       return;
     }
