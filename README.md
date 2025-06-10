@@ -44,6 +44,8 @@ Lobo usou contratos enganosos e juros abusivos para prender Pig em uma dívida e
 
 > **Mensagem-chave:** boas escolhas hoje são a liberdade de amanhã.
 
+---
+
 ## 🔗 Acesse o Jogo
 
 Você pode jogar o **FinanPig** diretamente pelo navegador, hospedado no GitHub Pages:
