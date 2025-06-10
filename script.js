@@ -98,47 +98,47 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-1.png",
         text: "Pig nunca foi muito bom com dinheiro. Tudo que ganhava, gastava na mesma hora — doces, brinquedos, roupas novas…",
-        audio: "./audios/dublagens/audio-01.ogg"
+        audio: "./audios/dublagens/audio-01.mp3"
       },
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-2.png",
         text: "Para ele, o futuro era só uma ideia distante",
-        audio: "./audios/dublagens/audio-02.ogg"
+        audio: "./audios/dublagens/audio-02.mp3"
       },
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-3.png",
         text: "Criado em um lar humilde, sempre teve o essencial graças ao esforço incansável de sua mãe.",
-        audio: "./audios/dublagens/audio-03.ogg"
+        audio: "./audios/dublagens/audio-03.mp3"
       },
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-4.png",
         text: "Mas, sem perceber, Pig foi se afundando em dívidas e decisões impulsivas, colocando em risco o pouco que sua família tinha.",
-        audio: "./audios/dublagens/audio-04.ogg"
+        audio: "./audios/dublagens/audio-04.mp3"
       },
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-5.png",
         text: "Quando a situação ficou crítica, surgiu uma “ajuda” misteriosa: Lobo Lobato, um sujeito elegante, sorridente… e perigosamente convincente.",
-        audio: "./audios/dublagens/audio-05.ogg"
+        audio: "./audios/dublagens/audio-05.mp3"
       },
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-6.png",
         text: "Ele ofereceu empréstimos fáceis, um novo lar alugado e até ajudou Pig a conseguir um emprego. Tudo parecia estar se resolvendo.",
-        audio: "./audios/dublagens/audio-06.ogg"
+        audio: "./audios/dublagens/audio-06.mp3"
       },
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-7.png",
         text: "Mas era uma armadilha. O Lobo, desonesto como sempre, usou contratos enganosos e juros abusivos para sugar cada moeda que Pig tinha",
-        audio: "./audios/dublagens/audio-07.ogg"
+        audio: "./audios/dublagens/audio-07.mp3"
       },
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-8.png",
         text: "Em pouco tempo, Pig se viu preso a uma dívida gigante — e o Lobo deixou claro: se não pagar até o último centavo, perderá tudo.",
-        audio: "./audios/dublagens/audio-08.ogg"
+        audio: "./audios/dublagens/audio-08.mp3"
       },
       {
         image: "./imagens/cutscenes/iniciais/cena-inicial-9.png",
         text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
-        audio: "./audios/dublagens/audio-09.ogg"
+        audio: "./audios/dublagens/audio-09.mp3"
       },
     ],
     finalBom: [], 
