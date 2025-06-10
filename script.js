@@ -1,8 +1,11 @@
 import { audioManager } from "./js/audioManager.js";
+let cutscenePlayer; // Declaração no escopo global (PARA CHAMAR NA FUNÇÃO TRIGGER)
 
 document.addEventListener("DOMContentLoaded", function () {
   const screen = document.getElementById("startScreen");
   const backToMenuButton = document.getElementById("backToMenu");
+
+  
 
   class CutscenePlayer {
     constructor(containerId, imageId, textId, fadeOverlayId, skipButtonId) {
@@ -70,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   //Instância global para a cutscene
-  const cutscenePlayer = new CutscenePlayer(
+   cutscenePlayer = new CutscenePlayer(
     "cutscene-container",
     "cutscene-image",
     "cutscene-text",
@@ -78,7 +81,44 @@ document.addEventListener("DOMContentLoaded", function () {
     "skipCutscene"
   );
 
-  //dados das cutscenes
+
+
+  //botão de iniciar o jogo
+  document.getElementById("startButton").addEventListener("click", () => {
+    cutscenePlayer.play(cutscenes.iniciais, () => {
+      startGame();
+      audioManager.playMusic(currentMap);
+    });
+
+    screen.classList.add("fade-out");
+    setTimeout(() => {
+      screen.style.display = "none";
+    }, 800);
+  });
+
+  // Voltar ao menu
+  backToMenuButton.addEventListener("click", function () {
+    screen.style.display = "flex";
+    screen.classList.remove("fade-out");
+    //---------------------------------------------------------------
+    pig.x = (canvas.width - pig.width) / 2;
+    pig.y = sidewalkY;
+
+    dialogManager.hide();
+    hidePig = false;
+    workedToday = false;
+
+    playerMoney = 100;
+    updateMoneyDisplay();
+    currentDay = 1;
+    updateDayDisplay();
+
+    currentMap = "casa";
+    loadMap("mapa-casa");
+    resizeCanvas();
+  });
+});
+//dados das cutscenes
   const cutscenes = {
     iniciais: [
       {
@@ -118,46 +158,34 @@ document.addEventListener("DOMContentLoaded", function () {
         text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
       },
     ],
-    finalBom: [], 
+    finalBom: [
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-1.png",
+            text: "Após dias de esforço, Pig finalmente conseguiu organizar suas finanças. Cada moeda economizada foi um passo para a liberdade. Lobo Lobato tentou de tudo, mas Pig, com sua nova disciplina, conseguiu pagar a dívida.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-2.png",
+            text: "Livre das garras do Lobo, Pig reergueu sua vida e a de sua família. Ele aprendeu a importância de planejar, investir e evitar os atalhos enganosos.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-3.png",
+            text: "Com o tempo, Pig não apenas prosperou, mas também se tornou um exemplo na comunidade, ajudando outros a não caírem nas mesmas armadilhas. Sua mãe, orgulhosa, viu seu filho se transformar.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-4.png",
+            text: "A vida de Pig mudou. Agora, ele investe, poupa e desfruta de cada conquista com consciência. Ele se tornou o porquinho financeiro que sempre deveria ter sido.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-5.png",
+            text: "Seu lar, antes ameaçado, tornou-se um refúgio de paz e segurança. Pig sabia que a verdadeira riqueza não estava em ter muito, mas em gerenciar bem o que se tem.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-6.png",
+            text: "E assim, a história de Pig se encerra. Um porquinho que aprendeu a voar... financeiramente.",
+        },
+    ], 
     finalRuim: [],
   };
-
-  //botão de iniciar o jogo
-  document.getElementById("startButton").addEventListener("click", () => {
-    cutscenePlayer.play(cutscenes.iniciais, () => {
-      startGame();
-      audioManager.playMusic(currentMap);
-    });
-
-    screen.classList.add("fade-out");
-    setTimeout(() => {
-      screen.style.display = "none";
-    }, 800);
-  });
-
-  // Voltar ao menu
-  backToMenuButton.addEventListener("click", function () {
-    screen.style.display = "flex";
-    screen.classList.remove("fade-out");
-    //---------------------------------------------------------------
-    pig.x = (canvas.width - pig.width) / 2;
-    pig.y = sidewalkY;
-
-    dialogManager.hide();
-    hidePig = false;
-    workedToday = false;
-
-    playerMoney = 100;
-    updateMoneyDisplay();
-    currentDay = 1;
-    updateDayDisplay();
-
-    currentMap = "casa";
-    loadMap("mapa-casa");
-    resizeCanvas();
-  });
-});
-
 //Adicionando Caixa de Interação.
 const dialogueBoxImage = new Image();
 dialogueBoxImage.src = "./imagens/logos/dialog-box-image.png";
@@ -643,9 +671,11 @@ function playSlotMachine() {
 
 // Função para rodar as cutscenes finais
 function triggerFinalCutscene() {
-  const finalType = playerMoney >= 400 ? "finalBom" : "finalRuim";
-  cutscenePlayer.play(cutscenes[finalType], () => {
-    showFinalScreen(); //definir o que acontece após a cutscene final
+  const tipo = playerMoney >= 400 ? "finalBom" : "finalRuim";
+  cutscenePlayer.play(cutscenes[tipo], () => {
+    // callback ao fim da cutscene:
+    // pode mostrar tela de créditos, reiniciar, etc.
+    showFinalScreen();
   });
 }
 
@@ -843,6 +873,7 @@ document.addEventListener("keydown", (e) => {
       }
     } else if (currentMap === "casa" && nearDoor) {
       if (dialogManager.active && dialogManager.type === "door") {
+        audioManager.playEffect("MinecraftPortaSound");
         currentMap = "sala";
         loadMap("mapa-sala");
         resizeCanvas();
@@ -1160,6 +1191,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "sala" && nearRoomExit) {
+      audioManager.playEffect("MinecraftPortaSound");
       currentMap = "casa";
       loadMap("mapa-casa");
       resizeCanvas();
