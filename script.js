@@ -234,9 +234,9 @@ let canSwitchMap = true;
 
 const maps = {
   casa: { transitions: { right: "trabalho" } },
-  trabalho: { transitions: { left: "casa", right: "shopping" } },
-  shopping: { transitions: { left: "trabalho", right: "casino" } },
-  casino: { transitions: { left: "shopping" } },
+  trabalho: { transitions: { left: "casa", right: "casino" } },
+  casino: { transitions: { left: "trabalho", right: "shopping" } },
+  shopping: { transitions: { left: "casino" } },
   shoppingInterno: { transitions: {} },
   casinoInterno: { transitions: {} },
   sala: { transitions: { right: "quarto" } },
@@ -877,8 +877,9 @@ document.addEventListener("keydown", (e) => {
         currentMap = "sala";
         loadMap("mapa-sala");
         resizeCanvas();
-        // Personagem spawna à direita da sala
-        pig.x = canvas.width * 0.9 - pig.width;
+
+        // Personagem spawna à esquerda da sala
+        pig.x = canvas.width * 0.1;
         pig.y = sidewalkY;
         dialogManager.hide();
       } else {
@@ -1566,7 +1567,7 @@ function draw() {
     pig.currentHeight = 200;
   } else if (!hidePig && (keys.ArrowLeft || keys.ArrowRight)) {
     walkFrameCounter++;
-    if (walkFrameCounter >= 10) {
+    if (walkFrameCounter >= 20) { // Velocidade da animação de andar (a cada quantos ciclos o frame muda)
       walkFrame = (walkFrame + 1) % 2;
       walkFrameCounter = 0;
     }
