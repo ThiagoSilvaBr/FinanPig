@@ -873,7 +873,7 @@ document.addEventListener("keydown", (e) => {
       }
     } else if (currentMap === "casa" && nearDoor) {
       if (dialogManager.active && dialogManager.type === "door") {
-        audioManager.playEffect("MinecraftPortaSound");
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "sala";
         loadMap("mapa-sala");
         resizeCanvas();
@@ -1012,6 +1012,7 @@ document.addEventListener("keydown", (e) => {
 
     if (currentMap === "shopping" && nearShoppingDoor) {
       if (dialogManager.active && dialogManager.type === "shoppingDoor") {
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "shoppingInterno";
         loadMap("mapa-shopping-interno");
         resizeCanvas();
@@ -1096,6 +1097,7 @@ document.addEventListener("keydown", (e) => {
 
     if (currentMap === "casino" && nearCasinoDoor) {
       if (dialogManager.active && dialogManager.type === "casinoDoor") {
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "casinoInterno";
         loadMap("mapa-cassino-interno");
         resizeCanvas();
@@ -1112,6 +1114,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "shoppingInterno" && nearShoppingExit) {
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "shopping";
       loadMap("mapa-shopping");
       resizeCanvas();
@@ -1121,6 +1124,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "casinoInterno" && nearCasinoExit) {
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "casino";
       loadMap("mapa-cassino");
       resizeCanvas();
@@ -1192,7 +1196,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "sala" && nearRoomExit) {
-      audioManager.playEffect("MinecraftPortaSound");
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "casa";
       loadMap("mapa-casa");
       resizeCanvas();

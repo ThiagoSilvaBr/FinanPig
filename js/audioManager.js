@@ -49,8 +49,8 @@ export const audioManager = {
     const sound = this.soundEffects[effectName];
     
     // Se for o som da porta do Minecraft, ajusta o tempo e a velocidade
-    if (effectName === "MinecraftPortaSound") {
-        sound.currentTime = 1.2;      // Começa a partir de 1.2 segundo
+    if (effectName === "minecraft-porta-sound") {
+        sound.currentTime = 1.65;      // Começa a partir de 1.65 segundo
         sound.playbackRate = 1.1;   // Acelera o som 
                                     // Ajuste este valor (ex: 1.2, 1.8, 2.0) conforme desejar
     } else {
