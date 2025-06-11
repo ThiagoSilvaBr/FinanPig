@@ -32,42 +32,6 @@ document.addEventListener("DOMContentLoaded", function () {
       this.showNext();
     }
 
-    // showNext() {
-    //     if (this.skip || this.index >= this.scenes.length) {
-    //       this.endCutscene();
-    //       return;
-    //     }
-      
-    //     const scene = this.scenes[this.index];
-    //     this.fadeOverlay.style.opacity = 1;
-      
-    //     this.currentTimeout1 = setTimeout(() => {
-    //       this.image.src = scene.image;
-    //       this.text.textContent = scene.text;
-    //       this.fadeOverlay.style.opacity = 0;
-      
-    //       if (scene.audio) {
-    //         this.audio.pause();
-    //         this.audio = new Audio(scene.audio);
-      
-    //         this.audio.addEventListener("canplaythrough", () => {
-    //           this.audio.play().catch(() => {});
-    //           this.currentTimeout2 = setTimeout(() => {
-    //             this.index++;
-    //             this.showNext();
-    //           }, this.audio.duration * 1000);
-    //         });
-      
-    //       } else {
-    //         this.currentTimeout2 = setTimeout(() => {
-    //           this.index++;
-    //           this.showNext();
-    //         }, 3000);
-    //       }
-      
-    //     }, 500);
-    //   }
-
     showNext() {
         if (this.skip || this.index >= this.scenes.length) {
           this.endCutscene();
