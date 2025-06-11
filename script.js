@@ -234,9 +234,9 @@ let canSwitchMap = true;
 
 const maps = {
   casa: { transitions: { right: "trabalho" } },
-  trabalho: { transitions: { left: "casa", right: "shopping" } },
-  shopping: { transitions: { left: "trabalho", right: "casino" } },
-  casino: { transitions: { left: "shopping" } },
+  trabalho: { transitions: { left: "casa", right: "casino" } },
+  casino: { transitions: { left: "trabalho", right: "shopping" } },
+  shopping: { transitions: { left: "casino" } },
   shoppingInterno: { transitions: {} },
   casinoInterno: { transitions: {} },
   sala: { transitions: { right: "quarto" } },
@@ -873,12 +873,13 @@ document.addEventListener("keydown", (e) => {
       }
     } else if (currentMap === "casa" && nearDoor) {
       if (dialogManager.active && dialogManager.type === "door") {
-        audioManager.playEffect("MinecraftPortaSound");
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "sala";
         loadMap("mapa-sala");
         resizeCanvas();
-        // Personagem spawna à direita da sala
-        pig.x = canvas.width * 0.9 - pig.width;
+
+        // Personagem spawna à esquerda da sala
+        pig.x = canvas.width * 0.1;
         pig.y = sidewalkY;
         dialogManager.hide();
       } else {
@@ -1011,6 +1012,7 @@ document.addEventListener("keydown", (e) => {
 
     if (currentMap === "shopping" && nearShoppingDoor) {
       if (dialogManager.active && dialogManager.type === "shoppingDoor") {
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "shoppingInterno";
         loadMap("mapa-shopping-interno");
         resizeCanvas();
@@ -1095,6 +1097,7 @@ document.addEventListener("keydown", (e) => {
 
     if (currentMap === "casino" && nearCasinoDoor) {
       if (dialogManager.active && dialogManager.type === "casinoDoor") {
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "casinoInterno";
         loadMap("mapa-cassino-interno");
         resizeCanvas();
@@ -1111,6 +1114,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "shoppingInterno" && nearShoppingExit) {
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "shopping";
       loadMap("mapa-shopping");
       resizeCanvas();
@@ -1120,6 +1124,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "casinoInterno" && nearCasinoExit) {
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "casino";
       loadMap("mapa-cassino");
       resizeCanvas();
@@ -1191,7 +1196,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "sala" && nearRoomExit) {
-      audioManager.playEffect("MinecraftPortaSound");
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "casa";
       loadMap("mapa-casa");
       resizeCanvas();
@@ -1566,7 +1571,7 @@ function draw() {
     pig.currentHeight = 200;
   } else if (!hidePig && (keys.ArrowLeft || keys.ArrowRight)) {
     walkFrameCounter++;
-    if (walkFrameCounter >= 10) {
+    if (walkFrameCounter >= 20) { // Velocidade da animação de andar (a cada quantos ciclos o frame muda)
       walkFrame = (walkFrame + 1) % 2;
       walkFrameCounter = 0;
     }
