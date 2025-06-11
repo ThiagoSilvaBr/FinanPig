@@ -30,6 +30,5 @@ export const audioManager = {
       this.ambientAudio.play().catch(() => {});
       this.currentAmbient = mapName;
     }
-  },
-
+  }
 };
