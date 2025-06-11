@@ -49,27 +49,33 @@ document.addEventListener("DOMContentLoaded", function () {
         this.fadeOverlay.style.opacity = 0;
 
         if (scene.audio) {
-          this.audio.pause();
-          this.audio = new Audio(scene.audio);
+          if (this.audio) {
+            this.audio.pause();
+            this.audio.currentTime = 0;
+          }
+
+          this.audio.src = scene.audio;
+          this.audio.load();
 
           this.audio.onloadedmetadata = () => {
             this.audio.play().then(() => {
               const duracao = this.audio.duration;
-              
+
               this.currentTimeout2 = setTimeout(() => {
                 this.index++;
                 this.showNext();
               }, duracao * 1000);
             }).catch(() => {
-              // Se falhar ao tocar, avança com tempo padrão
+              // fallback padrão
               this.currentTimeout2 = setTimeout(() => {
                 this.index++;
                 this.showNext();
               }, 4000);
             });
           };
-
-        } else {
+        }
+        
+        else {
           // Sem áudio, tempo padrão
           this.currentTimeout2 = setTimeout(() => {
             this.index++;
