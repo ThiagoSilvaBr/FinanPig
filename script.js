@@ -1,8 +1,11 @@
 import { audioManager } from "./js/audioManager.js";
+let cutscenePlayer; // Declaração no escopo global (PARA CHAMAR NA FUNÇÃO TRIGGER)
 
 document.addEventListener("DOMContentLoaded", function () {
   const screen = document.getElementById("startScreen");
   const backToMenuButton = document.getElementById("backToMenu");
+
+  
 
   class CutscenePlayer {
     constructor(containerId, imageId, textId, fadeOverlayId, skipButtonId) {
@@ -11,7 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
       this.text = document.getElementById(textId);
       this.fadeOverlay = document.getElementById(fadeOverlayId);
       this.skipButton = document.getElementById(skipButtonId);
-      this.audio = new Audio(); // Áudio para a respectiva cutscene
 
       this.index = 0;
       this.skip = false;
@@ -44,37 +46,12 @@ document.addEventListener("DOMContentLoaded", function () {
       this.currentTimeout1 = setTimeout(() => {
         this.image.src = scene.image;
         this.text.textContent = scene.text;
-        this.fadeOverlay.style.opacity = 0;
+        this.fadeOverlay.style.opacity = 0; // <- CORRETO
+        this.index++;
 
-        if (scene.audio) {
-          this.audio.pause();
-          this.audio = new Audio(scene.audio);
-
-          this.audio.onloadedmetadata = () => {
-            this.audio.play().then(() => {
-              const duracao = this.audio.duration;
-              
-              this.currentTimeout2 = setTimeout(() => {
-                this.index++;
-                this.showNext();
-              }, duracao * 1000);
-            }).catch(() => {
-              // Se falhar ao tocar, avança com tempo padrão
-              this.currentTimeout2 = setTimeout(() => {
-                this.index++;
-                this.showNext();
-              }, 4000);
-            });
-          };
-
-        } else {
-          // Sem áudio, tempo padrão
-          this.currentTimeout2 = setTimeout(() => {
-            this.index++;
-            this.showNext();
-          }, 3000);
-        }
-
+        this.currentTimeout2 = setTimeout(() => {
+          this.showNext();
+        }, 3000);
       }, 500);
     }
 
@@ -84,23 +61,19 @@ document.addEventListener("DOMContentLoaded", function () {
       clearTimeout(this.currentTimeout2);
       this.fadeOverlay.style.opacity = 0;
       this.container.style.display = "none";
-      this.audio.pause();
-      this.audio.currentTime = 0;
       this.isPlaying = false;
       this.onComplete();
     }
 
     endCutscene() {
       this.container.style.display = "none";
-      this.audio.pause();
-      this.audio.currentTime = 0;
       this.isPlaying = false;
       this.onComplete();
     }
   }
 
   //Instância global para a cutscene
-  const cutscenePlayer = new CutscenePlayer(
+   cutscenePlayer = new CutscenePlayer(
     "cutscene-container",
     "cutscene-image",
     "cutscene-text",
@@ -108,61 +81,9 @@ document.addEventListener("DOMContentLoaded", function () {
     "skipCutscene"
   );
 
-  //dados das cutscenes
-  const cutscenes = {
-    iniciais: [
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-1.png",
-        text: "Pig nunca foi muito bom com dinheiro. Tudo que ganhava, gastava na mesma hora — doces, brinquedos, roupas novas…",
-        audio: "./audios/dublagens/audio-01.mp3"
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-2.png",
-        text: "Para ele, o futuro era só uma ideia distante",
-        audio: "./audios/dublagens/audio-02.mp3"
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-3.png",
-        text: "Criado em um lar humilde, sempre teve o essencial graças ao esforço incansável de sua mãe.",
-        audio: "./audios/dublagens/audio-03.mp3"
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-4.png",
-        text: "Mas, sem perceber, Pig foi se afundando em dívidas e decisões impulsivas, colocando em risco o pouco que sua família tinha.",
-        audio: "./audios/dublagens/audio-04.mp3"
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-5.png",
-        text: "Quando a situação ficou crítica, surgiu uma “ajuda” misteriosa: Lobo Lobato, um sujeito elegante, sorridente… e perigosamente convincente.",
-        audio: "./audios/dublagens/audio-05.mp3"
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-6.png",
-        text: "Ele ofereceu empréstimos fáceis, um novo lar alugado e até ajudou Pig a conseguir um emprego. Tudo parecia estar se resolvendo.",
-        audio: "./audios/dublagens/audio-06.mp3"
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-7.png",
-        text: "Mas era uma armadilha. O Lobo, desonesto como sempre, usou contratos enganosos e juros abusivos para sugar cada moeda que Pig tinha",
-        audio: "./audios/dublagens/audio-07.mp3"
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-8.png",
-        text: "Em pouco tempo, Pig se viu preso a uma dívida gigante — e o Lobo deixou claro: se não pagar até o último centavo, perderá tudo.",
-        audio: "./audios/dublagens/audio-08.mp3"
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-9.png",
-        text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
-        audio: "./audios/dublagens/audio-09.mp3"
-      },
-    ],
-    finalBom: [], 
-    finalRuim: [],
-  };
+
 
   //botão de iniciar o jogo
-  // Renderização das cutscenes inicias
   document.getElementById("startButton").addEventListener("click", () => {
     cutscenePlayer.play(cutscenes.iniciais, () => {
       startGame();
@@ -197,7 +118,74 @@ document.addEventListener("DOMContentLoaded", function () {
     resizeCanvas();
   });
 });
-
+//dados das cutscenes
+  const cutscenes = {
+    iniciais: [
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-1.png",
+        text: "Pig nunca foi muito bom com dinheiro. Tudo que ganhava, gastava na mesma hora — doces, brinquedos, roupas novas…",
+      },
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-2.png",
+        text: "Para ele, o futuro era só uma ideia distante",
+      },
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-3.png",
+        text: "Criado em um lar humilde, sempre teve o essencial graças ao esforço incansável de sua mãe.",
+      },
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-4.png",
+        text: "Mas, sem perceber, Pig foi se afundando em dívidas e decisões impulsivas, colocando em risco o pouco que sua família tinha.",
+      },
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-5.png",
+        text: "Quando a situação ficou crítica, surgiu uma “ajuda” misteriosa: Lobo Lobato, um sujeito elegante, sorridente… e perigosamente convincente.",
+      },
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-6.png",
+        text: "Ele ofereceu empréstimos fáceis, um novo lar alugado e até ajudou Pig a conseguir um emprego. Tudo parecia estar se resolvendo.",
+      },
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-7.png",
+        text: "Mas era uma armadilha. O Lobo, desonesto como sempre, usou contratos enganosos e juros abusivos para sugar cada moeda que Pig tinha",
+      },
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-8.png",
+        text: "Em pouco tempo, Pig se viu preso a uma dívida gigante — e o Lobo deixou claro: se não pagar até o último centavo, perderá tudo.",
+      },
+      {
+        image: "./imagens/cutscenes/iniciais/cena-inicial-9.png",
+        text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
+      },
+    ],
+    finalBom: [
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-1.png",
+            text: "Após dias de esforço, Pig finalmente conseguiu organizar suas finanças. Cada moeda economizada foi um passo para a liberdade. Lobo Lobato tentou de tudo, mas Pig, com sua nova disciplina, conseguiu pagar a dívida.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-2.png",
+            text: "Livre das garras do Lobo, Pig reergueu sua vida e a de sua família. Ele aprendeu a importância de planejar, investir e evitar os atalhos enganosos.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-3.png",
+            text: "Com o tempo, Pig não apenas prosperou, mas também se tornou um exemplo na comunidade, ajudando outros a não caírem nas mesmas armadilhas. Sua mãe, orgulhosa, viu seu filho se transformar.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-4.png",
+            text: "A vida de Pig mudou. Agora, ele investe, poupa e desfruta de cada conquista com consciência. Ele se tornou o porquinho financeiro que sempre deveria ter sido.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-5.png",
+            text: "Seu lar, antes ameaçado, tornou-se um refúgio de paz e segurança. Pig sabia que a verdadeira riqueza não estava em ter muito, mas em gerenciar bem o que se tem.",
+        },
+        {
+            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-6.png",
+            text: "E assim, a história de Pig se encerra. Um porquinho que aprendeu a voar... financeiramente.",
+        },
+    ], 
+    finalRuim: [],
+  };
 //Adicionando Caixa de Interação.
 const dialogueBoxImage = new Image();
 dialogueBoxImage.src = "./imagens/logos/dialog-box-image.png";
@@ -246,9 +234,9 @@ let canSwitchMap = true;
 
 const maps = {
   casa: { transitions: { right: "trabalho" } },
-  trabalho: { transitions: { left: "casa", right: "shopping" } },
-  shopping: { transitions: { left: "trabalho", right: "casino" } },
-  casino: { transitions: { left: "shopping" } },
+  trabalho: { transitions: { left: "casa", right: "casino" } },
+  casino: { transitions: { left: "trabalho", right: "shopping" } },
+  shopping: { transitions: { left: "casino" } },
   shoppingInterno: { transitions: {} },
   casinoInterno: { transitions: {} },
   sala: { transitions: { right: "quarto" } },
@@ -683,9 +671,11 @@ function playSlotMachine() {
 
 // Função para rodar as cutscenes finais
 function triggerFinalCutscene() {
-  const finalType = playerMoney >= 400 ? "finalBom" : "finalRuim";
-  cutscenePlayer.play(cutscenes[finalType], () => {
-    showFinalScreen(); //definir o que acontece após a cutscene final
+  const tipo = playerMoney >= 400 ? "finalBom" : "finalRuim";
+  cutscenePlayer.play(cutscenes[tipo], () => {
+    // callback ao fim da cutscene:
+    // pode mostrar tela de créditos, reiniciar, etc.
+    showFinalScreen();
   });
 }
 
@@ -883,11 +873,13 @@ document.addEventListener("keydown", (e) => {
       }
     } else if (currentMap === "casa" && nearDoor) {
       if (dialogManager.active && dialogManager.type === "door") {
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "sala";
         loadMap("mapa-sala");
         resizeCanvas();
-        // Personagem spawna à direita da sala
-        pig.x = canvas.width * 0.9 - pig.width;
+
+        // Personagem spawna à esquerda da sala
+        pig.x = canvas.width * 0.1;
         pig.y = sidewalkY;
         dialogManager.hide();
       } else {
@@ -1020,6 +1012,7 @@ document.addEventListener("keydown", (e) => {
 
     if (currentMap === "shopping" && nearShoppingDoor) {
       if (dialogManager.active && dialogManager.type === "shoppingDoor") {
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "shoppingInterno";
         loadMap("mapa-shopping-interno");
         resizeCanvas();
@@ -1104,6 +1097,7 @@ document.addEventListener("keydown", (e) => {
 
     if (currentMap === "casino" && nearCasinoDoor) {
       if (dialogManager.active && dialogManager.type === "casinoDoor") {
+        audioManager.playEffect("minecraft-porta-sound");
         currentMap = "casinoInterno";
         loadMap("mapa-cassino-interno");
         resizeCanvas();
@@ -1120,6 +1114,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "shoppingInterno" && nearShoppingExit) {
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "shopping";
       loadMap("mapa-shopping");
       resizeCanvas();
@@ -1129,6 +1124,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "casinoInterno" && nearCasinoExit) {
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "casino";
       loadMap("mapa-cassino");
       resizeCanvas();
@@ -1200,6 +1196,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "sala" && nearRoomExit) {
+      audioManager.playEffect("minecraft-porta-sound");
       currentMap = "casa";
       loadMap("mapa-casa");
       resizeCanvas();
@@ -1574,7 +1571,7 @@ function draw() {
     pig.currentHeight = 200;
   } else if (!hidePig && (keys.ArrowLeft || keys.ArrowRight)) {
     walkFrameCounter++;
-    if (walkFrameCounter >= 10) {
+    if (walkFrameCounter >= 20) { // Velocidade da animação de andar (a cada quantos ciclos o frame muda)
       walkFrame = (walkFrame + 1) % 2;
       walkFrameCounter = 0;
     }
