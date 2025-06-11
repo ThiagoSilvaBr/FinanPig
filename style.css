@@ -75,14 +75,24 @@
 }
 
 #startButton {
-  font-weight: bold;
-  font-size: 24px;
-  border: none;
-}
-
-#startButton:hover {
-  transform: scale(1.15);
-}
+    background-color: #ff9900; /* Cor viva */
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+  
+  #startButton:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+    background-color: #e68a00;
+  }
 
 body {
   margin: 0;
