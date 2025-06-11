@@ -46,23 +46,38 @@ document.addEventListener("DOMContentLoaded", function () {
       this.currentTimeout1 = setTimeout(() => {
         this.image.src = scene.image;
         this.text.textContent = scene.text;
-        this.fadeOverlay.style.opacity = 0; // <- CORRETO
-        this.index++;
+        this.fadeOverlay.style.opacity = 0;
 
-        this.currentTimeout2 = setTimeout(() => {
-          this.showNext();
-        }, 3000);
+        if (scene.audio) {
+          this.audio.pause();
+          this.audio = new Audio(scene.audio);
+
+          this.audio.onloadedmetadata = () => {
+            this.audio.play().then(() => {
+              const duracao = this.audio.duration;
+              
+              this.currentTimeout2 = setTimeout(() => {
+                this.index++;
+                this.showNext();
+              }, duracao * 1000);
+            }).catch(() => {
+              // Se falhar ao tocar, avança com tempo padrão
+              this.currentTimeout2 = setTimeout(() => {
+                this.index++;
+                this.showNext();
+              }, 4000);
+            });
+          };
+
+        } else {
+          // Sem áudio, tempo padrão
+          this.currentTimeout2 = setTimeout(() => {
+            this.index++;
+            this.showNext();
+          }, 3000);
+        }
+
       }, 500);
-    }
-
-    skipCutscene() {
-      this.skip = true;
-      clearTimeout(this.currentTimeout1);
-      clearTimeout(this.currentTimeout2);
-      this.fadeOverlay.style.opacity = 0;
-      this.container.style.display = "none";
-      this.isPlaying = false;
-      this.onComplete();
     }
 
     endCutscene() {
