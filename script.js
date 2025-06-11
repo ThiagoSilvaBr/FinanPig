@@ -51,14 +51,22 @@ document.addEventListener("DOMContentLoaded", function () {
           this.audio.pause();
           this.audio = new Audio(scene.audio);
           this.audio.play().catch(() => {});
+        
+          this.audio.onloadedmetadata = () => {
+            this.currentTimeout2 = setTimeout(() => {
+              this.showNext();               // só avança depois do áudio terminar
+            }, this.audio.duration * 1000);  // transforma segundos em milissegundos
+          };
+          
         }
 
         this.fadeOverlay.style.opacity = 0; // <- CORRETO
         this.index++;
 
-        this.currentTimeout2 = setTimeout(() => {
-          this.showNext();
-        }, 3000);
+        // this.currentTimeout2 = setTimeout(() => {
+        //   this.showNext();
+        // }, 3000);
+
       }, 500);
     }
 
