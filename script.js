@@ -42,23 +42,39 @@ document.addEventListener("DOMContentLoaded", function () {
       this.fadeOverlay.style.opacity = 1;
 
       this.currentTimeout1 = setTimeout(() => {
-        
         this.image.src = scene.image;
         this.text.textContent = scene.text;
+        this.fadeOverlay.style.opacity = 0;
 
-        // Toca o áudio específico da cena
         if (scene.audio) {
           this.audio.pause();
           this.audio = new Audio(scene.audio);
-          this.audio.play().catch(() => {});
+
+          this.audio.onloadedmetadata = () => {
+            this.audio.play().then(() => {
+              const duracao = this.audio.duration;
+              
+              this.currentTimeout2 = setTimeout(() => {
+                this.index++;
+                this.showNext();
+              }, duracao * 1000);
+            }).catch(() => {
+              // Se falhar ao tocar, avança com tempo padrão
+              this.currentTimeout2 = setTimeout(() => {
+                this.index++;
+                this.showNext();
+              }, 4000);
+            });
+          };
+
+        } else {
+          // Sem áudio, tempo padrão
+          this.currentTimeout2 = setTimeout(() => {
+            this.index++;
+            this.showNext();
+          }, 3000);
         }
 
-        this.fadeOverlay.style.opacity = 0; // <- CORRETO
-        this.index++;
-
-        this.currentTimeout2 = setTimeout(() => {
-          this.showNext();
-        }, 3000);
       }, 500);
     }
 
