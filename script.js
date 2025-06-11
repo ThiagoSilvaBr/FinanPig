@@ -47,26 +47,36 @@ document.addEventListener("DOMContentLoaded", function () {
         this.text.textContent = scene.text;
 
         // Toca o áudio específico da cena
-        if (scene.audio) {
-          this.audio.pause();
-          this.audio = new Audio(scene.audio);
-          this.audio.play().catch(() => {});
+        // if (scene.audio) {
+        //   this.audio.pause();
+        //   this.audio = new Audio(scene.audio);
+        //   this.audio.play().catch(() => {});
         
-          this.audio.onloadedmetadata = () => {
-            this.currentTimeout2 = setTimeout(() => {
-              this.showNext();               // só avança depois do áudio terminar
-            }, this.audio.duration * 1000);  // transforma segundos em milissegundos
-          };
+        //   this.audio.onloadedmetadata = () => {
+        //     this.currentTimeout2 = setTimeout(() => {
+        //       this.showNext();               // só avança depois do áudio terminar
+        //     }, this.audio.duration * 1000);  // transforma segundos em milissegundos
+        //   };
+
+        // }
+
+        if (scene.audio) {
+            this.audio.pause();
+            this.audio = new Audio(scene.audio);
           
-        }
+            this.audio.onloadedmetadata = () => {
+              this.audio.play().catch(() => {});
+          
+              // Agora que temos a duração, esperamos antes de ir para a próxima
+              this.currentTimeout2 = setTimeout(() => {
+                this.index++;             // AVANÇA AQUI
+                this.showNext();          // CHAMA A PRÓXIMA DEPOIS
+              }, this.audio.duration * 1000);
+            };
+          }
 
-        this.fadeOverlay.style.opacity = 0; // <- CORRETO
-        this.index++;
-
-        // this.currentTimeout2 = setTimeout(() => {
-        //   this.showNext();
-        // }, 3000);
-
+        // this.fadeOverlay.style.opacity = 0; // <- CORRETO
+        // this.index++;
       }, 500);
     }
 
