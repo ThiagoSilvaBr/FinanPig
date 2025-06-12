@@ -25,13 +25,16 @@ document.addEventListener("DOMContentLoaded", function () {
       this.skipButton.addEventListener("click", () => this.skipCutscene());
     }
 
-    play(scenes, onComplete = () => { }) {
+    play(scenes, onComplete = () => {}, skippable = true) {
       this.scenes = scenes;
       this.onComplete = onComplete;
       this.index = 0;
       this.skip = false;
       this.isPlaying = true;
       this.container.style.display = "block";
+
+      this.skipButton.style.display = skippable ? "block" : "none";
+
       this.showNext();
     }
 
@@ -119,28 +122,32 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 800);
   });
 
-  // Voltar ao menu
-  backToMenuButton.addEventListener("click", function () {
-    screen.style.display = "flex";
-    screen.classList.remove("fade-out");
-    //---------------------------------------------------------------
-    pig.x = (canvas.width - pig.width) / 2;
-    pig.y = sidewalkY;
+  backToMenuButton.addEventListener("click", voltarAoMenuInicial);
 
-    dialogManager.hide();
-    hidePig = false;
-    workedToday = false;
-
-    playerMoney = 100;
-    updateMoneyDisplay();
-    currentDay = 1;
-    updateDayDisplay();
-
-    currentMap = "casa";
-    loadMap("mapa-casa");
-    resizeCanvas();
-  });
 });
+
+function voltarAoMenuInicial() {
+  const screen = document.getElementById("startScreen");
+  screen.style.display = "flex";
+  screen.classList.remove("fade-out");
+
+  pig.x = (canvas.width - pig.width) / 2;
+  pig.y = sidewalkY;
+
+  dialogManager.hide();
+  hidePig = false;
+  workedToday = false;
+
+  playerMoney = 100;
+  updateMoneyDisplay();
+  currentDay = 1;
+  updateDayDisplay();
+
+  currentMap = "casa";
+  loadMap("mapa-casa");
+  resizeCanvas();
+}
+
 //dados das cutscenes
 const cutscenes = {
   iniciais: [
@@ -216,8 +223,37 @@ const cutscenes = {
       text: "E assim, a história de Pig se encerra. Um porquinho que aprendeu a voar... financeiramente.",
     },
   ],
-  finalRuim: [],
+  finalRuim: [
+    {
+      image: "./imagens/cutscenes/finais/final-ruim/cena-final-ruim-0.png",
+      text:"O prazo terminou !"
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-ruim/cena-final-ruim-1.png",
+      text:"Cinco dias se passaram, e Pig não conseguiu juntar o suficiente. As decisões impulsivas, os gastos desnecessários, a falta de planejamento... tudo cobrou seu preço. O Lobo Lobato, fiel à sua natureza cruel, não teve piedade."
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-ruim/cena-final-ruim-2.png",
+      text:"— Negócios são negócios, meu caro porquinho... — disse com um sorriso frio enquanto assinava o último contrato."
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-ruim/cena-final-ruim-3.png",
+      text:"Pig perdeu tudo: a casa, os móveis, os poucos bens que tinha. E não parou por aí."
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-ruim/cena-final-ruim-4.png",
+      text:"O Lobo exigiu o pagamento até o último centavo, e como Pig não tinha mais como pagar... bem, o Lobo encontrou outra forma. A última cena que se ouviu foi o som de uma frigideira estalando."
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-ruim/cena-final-ruim-5.png",
+      text:"Pig virou bacon."
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-ruim/cena-final-ruim-6.png",
+    },
+  ],
 };
+
 //Adicionando Caixa de Interação.
 const dialogueBoxImage = new Image();
 dialogueBoxImage.src = "./imagens/logos/dialog-box-image.png";
@@ -703,12 +739,19 @@ function playSlotMachine() {
 
 // Função para rodar as cutscenes finais
 function triggerFinalCutscene() {
-  const tipo = playerMoney >= 400 ? "finalBom" : "finalRuim";
+  const prazoLimite = 5;
+  let tipo;
+
+  if (currentDay > prazoLimite) {
+    tipo = "finalRuim";
+  } else {
+    tipo = playerMoney >= 400 ? "finalBom" : "finalRuim";
+  }
+
   cutscenePlayer.play(cutscenes[tipo], () => {
-    // callback ao fim da cutscene:
-    // pode mostrar tela de créditos, reiniciar, etc.
-    showFinalScreen();
-  });
+    // Após o fim da cutscene final, volta direto ao menu inicial
+    voltarAoMenuInicial();
+  },false); //Não permite pular 
 }
 
 document.addEventListener("keydown", (e) => {
