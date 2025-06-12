@@ -8,7 +8,7 @@ export const audioManager = {
   soundEffects: {}, // Objeto para armazenar os efeitos pré-carregados
 
   playMusic(mapName) {
-    const musicPath = `./audio/musicas/${mapName}.mp3`;
+    const musicPath = `./audios/musicas/${mapName}.mp3`;
 
     if (this.currentMusic !== mapName) {
       this.musicAudio.pause();
@@ -23,7 +23,7 @@ export const audioManager = {
   },
 
   playAmbient(mapName) {
-    const ambientPath = `./audio/ambientes/${mapName}.mp3`;
+    const ambientPath = `./audios/ambientes/${mapName}.mp3`;
 
     if (this.currentAmbient !== mapName) {
       this.ambientAudio.pause();
@@ -38,7 +38,7 @@ export const audioManager = {
  
 // 🔊 Método para efeitos sonoros
   playEffect(effectName) {
-    const path = `./audio/efeitos/${effectName}.mp3`;
+    const path = `./audios/efeitos/${effectName}.mp3`;
 
     // Reutiliza se já estiver carregado
     if (!this.soundEffects[effectName]) {

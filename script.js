@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const screen = document.getElementById("startScreen");
   const backToMenuButton = document.getElementById("backToMenu");
 
-  
+
 
   class CutscenePlayer {
     constructor(containerId, imageId, textId, fadeOverlayId, skipButtonId) {
@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
       this.text = document.getElementById(textId);
       this.fadeOverlay = document.getElementById(fadeOverlayId);
       this.skipButton = document.getElementById(skipButtonId);
+      this.audio = new Audio();
 
       this.index = 0;
       this.skip = false;
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
       this.skipButton.addEventListener("click", () => this.skipCutscene());
     }
 
-    play(scenes, onComplete = () => {}) {
+    play(scenes, onComplete = () => { }) {
       this.scenes = scenes;
       this.onComplete = onComplete;
       this.index = 0;
@@ -44,14 +45,29 @@ document.addEventListener("DOMContentLoaded", function () {
       this.fadeOverlay.style.opacity = 1;
 
       this.currentTimeout1 = setTimeout(() => {
+        // Troca imagem e texto
         this.image.src = scene.image;
         this.text.textContent = scene.text;
-        this.fadeOverlay.style.opacity = 0; // <- CORRETO
-        this.index++;
+        this.fadeOverlay.style.opacity = 0;
 
-        this.currentTimeout2 = setTimeout(() => {
-          this.showNext();
-        }, 3000);
+        // Se houver áudio, toca sincronizado
+        if (scene.audio) {
+          if (!this.audio.paused) this.audio.pause(); // para o anterior
+          this.audio = new Audio(scene.audio);
+          this.audio.play();
+
+          // Avança para próxima cena após o fim do áudio
+          this.audio.onended = () => {
+            this.index++;
+            this.showNext();
+          };
+        } else {
+          // Se não tem áudio, usa tempo padrão
+          this.currentTimeout2 = setTimeout(() => {
+            this.index++;
+            this.showNext();
+          }, 3000);
+        }
       }, 500);
     }
 
@@ -59,6 +75,10 @@ document.addEventListener("DOMContentLoaded", function () {
       this.skip = true;
       clearTimeout(this.currentTimeout1);
       clearTimeout(this.currentTimeout2);
+
+      // 👇 PARE o áudio aqui
+      if (this.audio && !this.audio.paused) this.audio.pause();
+
       this.fadeOverlay.style.opacity = 0;
       this.container.style.display = "none";
       this.isPlaying = false;
@@ -66,6 +86,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     endCutscene() {
+      
+      // 👇 PARE o áudio aqui também
+      if (this.audio && !this.audio.paused) this.audio.pause();
       this.container.style.display = "none";
       this.isPlaying = false;
       this.onComplete();
@@ -73,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   //Instância global para a cutscene
-   cutscenePlayer = new CutscenePlayer(
+  cutscenePlayer = new CutscenePlayer(
     "cutscene-container",
     "cutscene-image",
     "cutscene-text",
@@ -119,73 +142,82 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 //dados das cutscenes
-  const cutscenes = {
-    iniciais: [
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-1.png",
-        text: "Pig nunca foi muito bom com dinheiro. Tudo que ganhava, gastava na mesma hora — doces, brinquedos, roupas novas…",
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-2.png",
-        text: "Para ele, o futuro era só uma ideia distante",
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-3.png",
-        text: "Criado em um lar humilde, sempre teve o essencial graças ao esforço incansável de sua mãe.",
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-4.png",
-        text: "Mas, sem perceber, Pig foi se afundando em dívidas e decisões impulsivas, colocando em risco o pouco que sua família tinha.",
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-5.png",
-        text: "Quando a situação ficou crítica, surgiu uma “ajuda” misteriosa: Lobo Lobato, um sujeito elegante, sorridente… e perigosamente convincente.",
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-6.png",
-        text: "Ele ofereceu empréstimos fáceis, um novo lar alugado e até ajudou Pig a conseguir um emprego. Tudo parecia estar se resolvendo.",
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-7.png",
-        text: "Mas era uma armadilha. O Lobo, desonesto como sempre, usou contratos enganosos e juros abusivos para sugar cada moeda que Pig tinha",
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-8.png",
-        text: "Em pouco tempo, Pig se viu preso a uma dívida gigante — e o Lobo deixou claro: se não pagar até o último centavo, perderá tudo.",
-      },
-      {
-        image: "./imagens/cutscenes/iniciais/cena-inicial-9.png",
-        text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
-      },
-    ],
-    finalBom: [
-        {
-            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-1.png",
-            text: "Após dias de esforço, Pig finalmente conseguiu organizar suas finanças. Cada moeda economizada foi um passo para a liberdade. Lobo Lobato tentou de tudo, mas Pig, com sua nova disciplina, conseguiu pagar a dívida.",
-        },
-        {
-            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-2.png",
-            text: "Livre das garras do Lobo, Pig reergueu sua vida e a de sua família. Ele aprendeu a importância de planejar, investir e evitar os atalhos enganosos.",
-        },
-        {
-            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-3.png",
-            text: "Com o tempo, Pig não apenas prosperou, mas também se tornou um exemplo na comunidade, ajudando outros a não caírem nas mesmas armadilhas. Sua mãe, orgulhosa, viu seu filho se transformar.",
-        },
-        {
-            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-4.png",
-            text: "A vida de Pig mudou. Agora, ele investe, poupa e desfruta de cada conquista com consciência. Ele se tornou o porquinho financeiro que sempre deveria ter sido.",
-        },
-        {
-            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-5.png",
-            text: "Seu lar, antes ameaçado, tornou-se um refúgio de paz e segurança. Pig sabia que a verdadeira riqueza não estava em ter muito, mas em gerenciar bem o que se tem.",
-        },
-        {
-            image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-6.png",
-            text: "E assim, a história de Pig se encerra. Um porquinho que aprendeu a voar... financeiramente.",
-        },
-    ], 
-    finalRuim: [],
-  };
+const cutscenes = {
+  iniciais: [
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-1.png",
+      text: "Pig nunca foi muito bom com dinheiro. Tudo que ganhava, gastava na mesma hora — doces, brinquedos, roupas novas…",
+      audio: "./audios/dublagens/audio-01.mp3",
+    },
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-2.png",
+      text: "Para ele, o futuro era só uma ideia distante",
+      audio: "./audios/dublagens/audio-02.mp3",
+    },
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-3.png",
+      text: "Criado em um lar humilde, sempre teve o essencial graças ao esforço incansável de sua mãe.",
+      audio: "./audios/dublagens/audio-03.mp3",
+    },
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-4.png",
+      text: "Mas, sem perceber, Pig foi se afundando em dívidas e decisões impulsivas, colocando em risco o pouco que sua família tinha.",
+      audio: "./audios/dublagens/audio-04.mp3",
+    },
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-5.png",
+      text: "Quando a situação ficou crítica, surgiu uma “ajuda” misteriosa: Lobo Lobato, um sujeito elegante, sorridente… e perigosamente convincente.",
+      audio: "./audios/dublagens/audio-05.mp3",
+    },
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-6.png",
+      text: "Ele ofereceu empréstimos fáceis, um novo lar alugado e até ajudou Pig a conseguir um emprego. Tudo parecia estar se resolvendo.",
+      audio: "./audios/dublagens/audio-06.mp3",
+    },
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-7.png",
+      text: "Mas era uma armadilha. O Lobo, desonesto como sempre, usou contratos enganosos e juros abusivos para sugar cada moeda que Pig tinha",
+      audio: "./audios/dublagens/audio-07.mp3",
+    },
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-8.png",
+      text: "Em pouco tempo, Pig se viu preso a uma dívida gigante — e o Lobo deixou claro: se não pagar até o último centavo, perderá tudo.",
+      audio: "./audios/dublagens/audio-08.mp3",
+    },
+    {
+      image: "./imagens/cutscenes/iniciais/cena-inicial-9.png",
+      text: "Agora, Pig precisa se levantar, aprender a cuidar do seu dinheiro e dar a volta por cima. Ele terá que economizar, fazer escolhas inteligentes, resistir às tentações e montar seu plano financeiro. Cada passo errado aproxima o Lobo. Mas cada boa decisão é uma vitória rumo à liberdade!",
+      audio: "./audios/dublagens/audio-09.mp3",
+    },
+  ],
+  finalBom: [
+    {
+      image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-1.png",
+      text: "Após dias de esforço, Pig finalmente conseguiu organizar suas finanças. Cada moeda economizada foi um passo para a liberdade. Lobo Lobato tentou de tudo, mas Pig, com sua nova disciplina, conseguiu pagar a dívida.",
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-2.png",
+      text: "Livre das garras do Lobo, Pig reergueu sua vida e a de sua família. Ele aprendeu a importância de planejar, investir e evitar os atalhos enganosos.",
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-3.png",
+      text: "Com o tempo, Pig não apenas prosperou, mas também se tornou um exemplo na comunidade, ajudando outros a não caírem nas mesmas armadilhas. Sua mãe, orgulhosa, viu seu filho se transformar.",
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-4.png",
+      text: "A vida de Pig mudou. Agora, ele investe, poupa e desfruta de cada conquista com consciência. Ele se tornou o porquinho financeiro que sempre deveria ter sido.",
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-5.png",
+      text: "Seu lar, antes ameaçado, tornou-se um refúgio de paz e segurança. Pig sabia que a verdadeira riqueza não estava em ter muito, mas em gerenciar bem o que se tem.",
+    },
+    {
+      image: "./imagens/cutscenes/finais/final-bom/cena-final-bom-6.png",
+      text: "E assim, a história de Pig se encerra. Um porquinho que aprendeu a voar... financeiramente.",
+    },
+  ],
+  finalRuim: [],
+};
 //Adicionando Caixa de Interação.
 const dialogueBoxImage = new Image();
 dialogueBoxImage.src = "./imagens/logos/dialog-box-image.png";
