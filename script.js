@@ -25,12 +25,13 @@ document.addEventListener("DOMContentLoaded", function () {
       this.skipButton.addEventListener("click", () => this.skipCutscene());
     }
 
-    play(scenes, onComplete = () => {}, skippable = true) {
+    play(scenes, onComplete = () => {}, skippable = true, tempoPadrao = 3000) {
       this.scenes = scenes;
       this.onComplete = onComplete;
       this.index = 0;
       this.skip = false;
       this.isPlaying = true;
+      this.tempoPadrao = tempoPadrao;
       this.container.style.display = "block";
 
       this.skipButton.style.display = skippable ? "block" : "none";
@@ -69,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
           this.currentTimeout2 = setTimeout(() => {
             this.index++;
             this.showNext();
-          }, 3000);
+          }, this.tempoPadrao);
         }
       }, 500);
     }
@@ -751,7 +752,7 @@ function triggerFinalCutscene() {
   cutscenePlayer.play(cutscenes[tipo], () => {
     // Após o fim da cutscene final, volta direto ao menu inicial
     voltarAoMenuInicial();
-  },false); //Não permite pular 
+  },false,5000); //Não permite pular 
 }
 
 document.addEventListener("keydown", (e) => {
