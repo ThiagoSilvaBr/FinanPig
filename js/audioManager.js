@@ -5,59 +5,131 @@ export const audioManager = {
   ambientAudio: new Audio(),
   currentMusic: null,
   currentAmbient: null,
-  soundEffects: {}, // Objeto para armazenar os efeitos pré-carregados
+  soundEffects: {},
 
-  playMusic(mapName) {
-    const musicPath = `./audios/musicas/${mapName}.mp3`;
+  fadeOut(audio, callback) {
+    const fadeInterval = setInterval(() => {
+      if (audio.volume > 0.05) {
+        audio.volume -= 0.05;
+      } else {
+        clearInterval(fadeInterval);
+        audio.pause();
+        audio.volume = 0.2; // volume final após fade
+        if (callback) callback();
+      }
+    }, 50);
+  },
 
-    if (this.currentMusic !== mapName) {
-      this.musicAudio.pause();
+  fadeIn(audio) {
+    audio.volume = 0;
+    audio.play().catch(() => {});
+    const fadeInterval = setInterval(() => {
+      if (audio.volume < 0.2) {
+        audio.volume += 0.02;
+      } else {
+        clearInterval(fadeInterval);
+        audio.volume = 0.2;
+      }
+    }, 50);
+  },
+
+  playMusic(musicName) {
+    const musicPath = `./audios/musicas/${musicName}.mp3`;
+    if (this.currentMusic === musicName) return;
+
+    if (!this.musicAudio.paused) {
+      this.fadeOut(this.musicAudio, () => {
+        this.musicAudio = new Audio(musicPath);
+        this.musicAudio.loop = true;
+        this.fadeIn(this.musicAudio);
+      });
+    } else {
       this.musicAudio = new Audio(musicPath);
       this.musicAudio.loop = true;
-      this.musicAudio.volume = 0.4;
-      this.musicAudio.play().catch(() => {});
-      this.currentMusic = mapName;
+      this.fadeIn(this.musicAudio);
     }
 
-    this.playAmbient(mapName); // Toca som ambiente junto com a música
+    this.currentMusic = musicName;
   },
 
-  playAmbient(mapName) {
-    const ambientPath = `./audios/ambientes/${mapName}.mp3`;
+  playAmbient(ambientName) {
+    const ambientPath = `./audios/ambientes/${ambientName}.mp3`;
+    if (this.currentAmbient === ambientName) return;
 
-    if (this.currentAmbient !== mapName) {
-      this.ambientAudio.pause();
+    if (!this.ambientAudio.paused) {
+      this.fadeOut(this.ambientAudio, () => {
+        this.ambientAudio = new Audio(ambientPath);
+        this.ambientAudio.loop = true;
+        this.fadeIn(this.ambientAudio);
+      });
+    } else {
       this.ambientAudio = new Audio(ambientPath);
       this.ambientAudio.loop = true;
-      this.ambientAudio.volume = 0.5;
-      this.ambientAudio.play().catch(() => {});
-      this.currentAmbient = mapName;
+      this.fadeIn(this.ambientAudio);
     }
+
+    this.currentAmbient = ambientName;
   },
-//Ainda irei arrumar Melhor a questao dos efeitos sonoros. Atualizações Futuras. (Hojak)
- 
-// 🔊 Método para efeitos sonoros
+
   playEffect(effectName) {
-    const path = `./audios/efeitos/${effectName}.mp3`;
+  const path = `./audios/efeitos/${effectName}.mp3`;
 
-    // Reutiliza se já estiver carregado
-    if (!this.soundEffects[effectName]) {
-      this.soundEffects[effectName] = new Audio(path);
-      this.soundEffects[effectName].volume = 0.6;
-    }
+  if (!this.soundEffects[effectName]) {
+    this.soundEffects[effectName] = new Audio(path);
+    this.soundEffects[effectName].volume = 0.5;
+  }
 
-    const sound = this.soundEffects[effectName];
-    
-    // Se for o som da porta do Minecraft, ajusta o tempo e a velocidade
-    if (effectName === "minecraft-porta-sound") {
-        sound.currentTime = 1.65;      // Começa a partir de 1.65 segundo
-        sound.playbackRate = 1.1;   // Acelera o som 
-                                    // Ajuste este valor (ex: 1.2, 1.8, 2.0) conforme desejar
+  const sound = this.soundEffects[effectName];
+
+  // 🔧 Tratamento especial para som da porta do Minecraft
+  if (effectName === "minecraft-porta-sound") {
+    sound.currentTime = 1.65;
+    sound.playbackRate = 1.1;
+  } else {
+    sound.currentTime = 0;
+    sound.playbackRate = 1.0;
+  }
+
+  sound.play().catch(() => {});
+},
+
+
+  setMap(mapName) {
+    const mapsWithAudio = {
+      casa: { music: "cidade", ambient: null },
+      trabalho: { music: "cidade", ambient: null },
+      rua: { music: "cidade", ambient: null },
+      shopping: { music: "cidade", ambient: null },
+      shoppingInterno: { music: null, ambient: "shopping" },
+      casinoInterno: { music: "cidade", ambient: null },
+    };
+
+    const config = mapsWithAudio[mapName];
+    if (!config) return;
+
+    if (config.music) {
+      if (this.currentMusic !== config.music) {
+        this.playMusic(config.music);
+      }
     } else {
-        sound.currentTime = 0;      // Para outros efeitos, começa do início
-        sound.playbackRate = 1.0;   // Garante que outros efeitos toquem em velocidade normal
+      if (!this.musicAudio.paused) {
+        this.fadeOut(this.musicAudio);
+      }
+      this.currentMusic = null;
     }
-    
-    sound.play().catch(() => {}); // Toca o som
+
+    if (config.ambient) {
+      if (this.currentAmbient !== config.ambient) {
+        this.playAmbient(config.ambient);
+      }
+    } else {
+      if (!this.ambientAudio.paused) {
+        this.fadeOut(this.ambientAudio);
+      }
+      this.currentAmbient = null;
+    }
+
+    console.log("Trocando para:", mapName);
+    console.log("Esperado:", config);
   }
 };

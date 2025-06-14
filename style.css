@@ -1,3 +1,60 @@
+#fixedInventory {
+  position: fixed;
+  top: 100px; /* mais abaixo */
+  right: 30px; /* mais para dentro */
+  display: flex;
+  gap: 10px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  z-index: 900;
+}
+
+.inventorySlot {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(#f0e4c3, #e6d9ab); /* fundo claro com leve gradiente amarelado */
+  border: 2px solid #5e4322; /* borda escura de madeira */
+  box-shadow:
+    inset 0 0 2px #fff8dc,     /* brilho interno claro */
+    inset 0 0 5px rgba(0,0,0,0.2), /* leve sombra interna */
+    0 2px 2px rgba(0,0,0,0.4); /* sombra de profundidade */
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.inventoryIcon {
+  width: 36px;
+  height: 36px;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 2px black);
+}
+
+/* 📱 Responsivo: telas menores que 600px */
+@media (max-width: 600px) {
+  #fixedInventory {
+    top: 120px;
+    right: 10px;
+    gap: 6px;
+    padding: 4px;
+  }
+
+  .inventorySlot {
+    width: 40px;
+    height: 40px;
+  }
+
+  .inventoryIcon {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+
+
 .moneyBox {
   position: relative;
   display: flex;

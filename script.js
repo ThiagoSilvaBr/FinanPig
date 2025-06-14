@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("startButton").addEventListener("click", () => {
     cutscenePlayer.play(cutscenes.iniciais, () => {
       startGame();
-      audioManager.playMusic(currentMap);
+      audioManager.setMap(currentMap); // ✅ CORRETO
     });
 
     screen.classList.add("fade-out");
@@ -147,6 +147,8 @@ function voltarAoMenuInicial() {
   currentMap = "casa";
   loadMap("mapa-casa");
   resizeCanvas();
+  clearInventoryIcons();
+
 }
 
 //dados das cutscenes
@@ -326,6 +328,7 @@ function switchMap(direction) {
   if (nextMap && canSwitchMap) {
     const previousMap = currentMap;
     currentMap = nextMap;
+    audioManager.setMap(currentMap);
     canSwitchMap = false;
 
     const mapFileNames = {
@@ -338,11 +341,13 @@ function switchMap(direction) {
       sala: "mapa-sala",
       quarto: "mapa-quarto",
     };
+    
 
     loadMap(mapFileNames[currentMap]);
     resizeCanvas();
 
-    audioManager.playMusic(currentMap);
+    audioManager.setMap(currentMap);
+
     if (nextMap === "sala" && currentDay === 4) {
       dialogManager.show(
         "warningDia4",
@@ -670,12 +675,13 @@ function isNearCenter(threshold = 0.06) {
 
 // Pedidos diários da mãe do personagem
 const momRequests = {
-  1: { item: "uma limonada", type: "lemonade" },
-  2: { item: "itens de saúde", type: "leftShop" },
-  3: { item: "mantimentos", type: "rightShop" },
-  4: { item: "itens de higiene", type: "leftShop" },
-  5: { item: "mantimentos", type: "rightShop" },
+  1: { item: "Limonada", type: "lemonade" },
+  2: { item: "Itens de Higiene", type: "leftShop" },
+  3: { item: "Mantimentos", type: "rightShop" },
+  4: { item: "Itens de Higiene", type: "leftShop" },
+  5: { item: "Mantimentos", type: "rightShop" },
 };
+
 
 let itemDeliveredToday = false;
 
@@ -926,6 +932,7 @@ document.addEventListener("keydown", (e) => {
           if (momRequests[currentDay].type === "lemonade") {
             itemDeliveredToday = true;
           }
+          showItemIcon("Limonada");
 
           dialogManager.show(
             "lemonadeSuccess",
@@ -969,28 +976,32 @@ document.addEventListener("keydown", (e) => {
     }
 
     // Ver o que a mãe do personagem precisa em cada dia
-    if (currentMap === "sala" && nearMom) {
-      if (dialogManager.active && dialogManager.type === "momHint") {
-        dialogManager.hide();
+   if (currentMap === "sala" && nearMom) {
+  if (dialogManager.active && dialogManager.type === "momHint") {
+    dialogManager.hide();
 
-        const request = momRequests[currentDay];
-        if (itemDeliveredToday) {
-          dialogManager.show(
-            "momThanks",
-            "Mamãe",
-            "Muito obrigada por comprar\n o que eu pedi meu filho! ❤"
-          );
-        } else {
-          dialogManager.show(
-            "momRequest",
-            "Mamãe",
-            `Filho, você pode comprar\n ${request.item} para mim,\n por favor?`
-          );
-        }
-      } else if (dialogManager.type === "momRequest" && !itemDeliveredToday) {
-        dialogManager.hide();
-      }
+    const request = momRequests[currentDay];
+    if (itemDeliveredToday) {
+      // 👇 Remove o item do inventário visual
+      hideItemIcon(request.item);
+
+      dialogManager.show(
+        "momThanks",
+        "Mamãe",
+        "Muito obrigada por comprar\n o que eu pedi meu filho! ❤"
+      );
+    } else {
+      dialogManager.show(
+        "momRequest",
+        "Mamãe",
+        `Filho, você pode comprar\n ${request.item} para mim,\n por favor?`
+      );
     }
+  } else if (dialogManager.type === "momRequest" && !itemDeliveredToday) {
+    dialogManager.hide();
+  }
+}
+
 
     if (currentMap === "quarto" && nearBed) {
       // Impede o personagem de dormir quando for dia 5 (final)
@@ -1090,6 +1101,7 @@ document.addEventListener("keydown", (e) => {
       if (dialogManager.active && dialogManager.type === "shoppingDoor") {
         audioManager.playEffect("minecraft-porta-sound");
         currentMap = "shoppingInterno";
+        audioManager.setMap(currentMap);
         loadMap("mapa-shopping-interno");
         resizeCanvas();
         pig.x = canvas.width / 2 - pig.width / 2;
@@ -1115,6 +1127,7 @@ document.addEventListener("keydown", (e) => {
           if (momRequests[currentDay].type === "leftShop") {
             itemDeliveredToday = true;
           }
+          showItemIcon("Itens de Higiene");
 
           dialogManager.show(
             "leftShopSuccess",
@@ -1148,6 +1161,7 @@ document.addEventListener("keydown", (e) => {
           if (momRequests[currentDay].type === "rightShop") {
             itemDeliveredToday = true;
           }
+          showItemIcon("Mantimentos");
 
           dialogManager.show(
             "rightShopSuccess",
@@ -1192,6 +1206,7 @@ document.addEventListener("keydown", (e) => {
     if (currentMap === "shoppingInterno" && nearShoppingExit) {
       audioManager.playEffect("minecraft-porta-sound");
       currentMap = "shopping";
+      audioManager.setMap(currentMap);
       loadMap("mapa-shopping");
       resizeCanvas();
       pig.x = canvas.width / 2 - pig.width / 2;
@@ -1744,5 +1759,39 @@ loadMap("mapa-casa");
 window.addEventListener("resize", resizeCanvas);
 
 function startGame() {
-  console.log("O jogo começou!");
+  console.log("O jogo começou!"); 
 }
+
+function showItemIcon(itemName) {
+  const iconIdMap = {
+    "Limonada": "icon-limonada",
+    "Itens de Higiene": "icon-higiene",
+    "Mantimentos": "icon-mantimentos"
+  };
+
+  const id = iconIdMap[itemName];
+  if (id) {
+    document.getElementById(id).style.display = "block";
+  }
+}
+
+function hideItemIcon(itemName) {
+  const iconIdMap = {
+    "Limonada": "icon-limonada",
+    "Itens de Higiene": "icon-higiene",
+    "Mantimentos": "icon-mantimentos"
+  };
+
+  const id = iconIdMap[itemName];
+  if (id) {
+    document.getElementById(id).style.display = "none";
+  }
+}
+
+function clearInventoryIcons() {
+  document.getElementById("icon-limonada").style.display = "none";
+  document.getElementById("icon-higiene").style.display = "none";
+  document.getElementById("icon-mantimentos").style.display = "none";
+}
+
+
