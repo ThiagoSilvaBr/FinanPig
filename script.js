@@ -745,6 +745,7 @@ function playSlotMachine() {
 }
 
 // Função para rodar as cutscenes finais
+// Alguns ajustes foram feitos para parar a música padrão do jogo (Matheus)
 function triggerFinalCutscene() {
   const prazoLimite = 5;
   let tipo;
@@ -755,11 +756,21 @@ function triggerFinalCutscene() {
     tipo = playerMoney >= 400 ? "finalBom" : "finalRuim";
   }
 
+  // 👉 PARA A MÚSICA PADRÃO
+  audioManager.stopMusic();
+
+  // 👉 TOCA A MÚSICA DO FINAL
+  audioManager.playFinalMusic(tipo);
+
   cutscenePlayer.play(cutscenes[tipo], () => {
-    // Após o fim da cutscene final, volta direto ao menu inicial
+    // 👉 Quando a cutscene terminar, PARA a música do final
+    audioManager.stopMusic();
+
+    // 👉 Volta pro menu inicial
     voltarAoMenuInicial();
-  },false,5000); //Não permite pular 
+  }, false, 5000); // Cutscene final não pode pular
 }
+
 
 document.addEventListener("keydown", (e) => {
   // Bloqueia qualquer tecla durante a cutscene
