@@ -93,6 +93,29 @@ export const audioManager = {
   sound.play().catch(() => {});
 },
 
+  // Função para tocar as músicas das cutscenes finais (Matheus)
+  playFinalMusic(finalType) {
+    this.musicAudio.pause();
+    
+    let musicFile = "";
+    if (finalType === "finalBom") {
+      musicFile = "./audios/musicas/final-bom.mp3";
+    } else if (finalType === "finalRuim") {
+      musicFile = "./audios/musicas/final-ruim.mp3";
+    } else {
+      return; // Se passar tipo errado, não faz nada
+    }
+  
+    this.musicAudio = new Audio(musicFile);
+    this.musicAudio.loop = true;
+    this.musicAudio.volume = 0.5;
+    this.musicAudio.play().catch(() => {});
+  },
+  
+  stopMusic() {
+    this.musicAudio.pause();
+    this.currentMusic = null;
+  },
 
   setMap(mapName) {
     const mapsWithAudio = {
