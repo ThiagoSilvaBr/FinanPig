@@ -128,28 +128,13 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function voltarAoMenuInicial() {
+  resetGameVariables();
   const screen = document.getElementById("startScreen");
   screen.style.display = "flex";
   screen.classList.remove("fade-out");
-
-  pig.x = (canvas.width - pig.width) / 2;
-  pig.y = sidewalkY;
-
   dialogManager.hide();
-  hidePig = false;
-  workedToday = false;
-
-  playerMoney = 100;
-  updateMoneyDisplay();
-  currentDay = 1;
-  updateDayDisplay();
-
-  currentMap = "casa";
-  loadMap("mapa-casa");
-  resizeCanvas();
-  clearInventoryIcons();
-
 }
+
 
 //dados das cutscenes
 const cutscenes = {
@@ -745,6 +730,7 @@ function playSlotMachine() {
 }
 
 // Função para rodar as cutscenes finais
+// Alguns ajustes foram feitos para parar a música padrão do jogo (Matheus)
 function triggerFinalCutscene() {
   const prazoLimite = 5;
   let tipo;
@@ -755,11 +741,21 @@ function triggerFinalCutscene() {
     tipo = playerMoney >= 400 ? "finalBom" : "finalRuim";
   }
 
+  // 👉 PARA A MÚSICA PADRÃO
+  audioManager.stopMusic();
+
+  // 👉 TOCA A MÚSICA DO FINAL
+  audioManager.playFinalMusic(tipo);
+
   cutscenePlayer.play(cutscenes[tipo], () => {
-    // Após o fim da cutscene final, volta direto ao menu inicial
+    // 👉 Quando a cutscene terminar, PARA a música do final
+    audioManager.stopMusic();
+
+    // 👉 Volta pro menu inicial
     voltarAoMenuInicial();
-  },false,5000); //Não permite pular 
+  }, false, 5000); // Cutscene final não pode pular
 }
+
 
 document.addEventListener("keydown", (e) => {
   // Bloqueia qualquer tecla durante a cutscene
@@ -1750,6 +1746,76 @@ function checkAllLoaded() {
     gameLoop();
   }
 }
+
+function resetGameVariables() {
+  // Variáveis de Interação
+  nearLemonade = false;
+  interactedWithLemonade = false;
+  justClosedLemonadeDialog = false;
+
+  nearDoor = false;
+  interactedWithDoor = false;
+  justClosedDoorDialog = false;
+
+  nearOffice = false;
+  interactedWithOffice = false;
+  justClosedOfficeDialog = false;
+  workedToday = false;
+
+  nearShoppingDoor = false;
+  interactedWithShoppingDoor = false;
+  justClosedShoppingDoorDialog = false;
+
+  nearLeftShopItem = false;
+  interactedWithLeftShopItem = false;
+
+  nearRightShopItem = false;
+  interactedWithRightShopItem = false;
+
+  nearCasinoDoor = false;
+  interactedWithCasinoDoor = false;
+  justClosedCasinoDoorDialog = false;
+
+  nearMom = false;
+  interactedWithMom = false;
+  justClosedMomDialog = false;
+
+  nearBed = false;
+  interactedWithBed = false;
+  justClosedBedDialog = false;
+  hidePig = false;
+  waitingWakeUpDismiss = false;
+
+  nearCasinoExit = false;
+  nearRoomExit = false;
+  nearShoppingExit = false;
+
+  nearSlotMachine = false;
+  interactedWithSlotMachine = false;
+  currentSlotResults = [];
+  showSlotResults = false;
+  slotIsSpining = false;
+
+  // Variáveis de progresso de jogo
+  playerMoney = 100;
+  moneySpentToday = 0;
+  moneyEarnedToday = 0;
+  currentDay = 1;
+  itemDeliveredToday = false;
+  bossDialogStep = 0;
+  talkedToBoss = false;
+
+  // Reseta posicionamento e mapa
+  currentMap = "casa";
+  loadMap("mapa-casa");
+  resizeCanvas();
+  pig.x = (canvas.width - pig.width) / 2;
+  pig.y = sidewalkY;
+
+  updateMoneyDisplay();
+  updateDayDisplay();
+}
+
 
 assets.background.onload = checkAllLoaded;
 assets.pigIdle.onload = checkAllLoaded;
