@@ -269,7 +269,7 @@ const pig = {
   y: 0,
   width: 200,
   height: 200,
-  speed: 6,
+  speed: 15,
   velocityY: 0,
   isJumping: false,
   direction: "right",
@@ -407,6 +407,7 @@ let slotIsSpining = false;
 
 let walkFrame = 0;
 let walkFrameCounter = 0;
+let previousMoney = playerMoney; 
 
 const dialogManager = {
   active: false,
@@ -624,6 +625,12 @@ function updateMoneyDisplay() {
   const moneySpan = document.getElementById("money");
   moneySpan.textContent = `R$ ${playerMoney.toFixed(2)}`;
 
+  // ✅ Toca o som só se houve mudança
+  if (playerMoney !== previousMoney) {
+    audioManager.playEffect("moedas");
+    previousMoney = playerMoney;
+  }
+
   // Animação do texto
   moneySpan.classList.add("moneyGain");
   setTimeout(() => {
@@ -639,6 +646,7 @@ function updateMoneyDisplay() {
     }, 500);
   }
 }
+
 
 function updateDayDisplay() {
   const dayElement = document.getElementById("day");

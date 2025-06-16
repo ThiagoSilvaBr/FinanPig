@@ -93,16 +93,32 @@ export const audioManager = {
   },
 
   playEffect(effectName) {
-    const path = `./audios/efeitos/${effectName}.mp3`;
-    let fx = this.soundEffects[effectName];
-    if (!fx) {
-      fx = new Audio(path);
-      fx.volume = 0.5;
-      this.soundEffects[effectName] = fx;
-    }
-    fx.currentTime = 1.68; // delay para começar o som da porta (tempo vazio do áudio)
-    fx.play().catch(err => console.warn("audioManager.playEffect()", err));
-  },
+  const path = `./audios/efeitos/${effectName}.mp3`;
+
+  let fx = this.soundEffects[effectName];
+
+  // Carrega o som, se ainda não estiver carregado
+  if (!fx) {
+    fx = new Audio(path);
+    fx.volume = 0.5;
+    this.soundEffects[effectName] = fx;
+  }
+
+  // Personalizações por tipo de efeito
+  switch (effectName) {
+    case "minecraft-porta-sound":
+      fx.currentTime = 1.68;
+      fx.playbackRate = 1.1;
+      break;
+    default:
+      fx.currentTime = 0;
+      fx.playbackRate = 1.0;
+      break;
+  }
+
+  fx.play().catch(err => console.warn("audioManager.playEffect()", err));
+},
+
 
   playFinalMusic(type) {
     console.log("[audioManager] playFinalMusic:", type);
