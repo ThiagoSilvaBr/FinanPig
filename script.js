@@ -269,7 +269,7 @@ const pig = {
   y: 0,
   width: 200,
   height: 200,
-  speed: 15,
+  speed: 6,
   velocityY: 0,
   isJumping: false,
   direction: "right",
