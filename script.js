@@ -1614,7 +1614,7 @@ function update() {
       dialogManager.show(
         "slotMachineHint",
         "Máquina de Caça-Níquel",
-        "Pressione 'E' para jogar\n por R$ 30,00"
+        "Pressione 'E' para jogar\n por R$ 15,00"
       );
     }
     nearSlotMachine = true;

@@ -1,158 +1,160 @@
 // js/audioManager.js
 
 export const audioManager = {
-  musicAudio: new Audio(),
+  musicAudio:   new Audio(),
   ambientAudio: new Audio(),
-  currentMusic: null,
-  currentAmbient: null,
   soundEffects: {},
 
-  fadeOut(audio, callback) {
-    const fadeInterval = setInterval(() => {
-      if (audio.volume > 0.05) {
-        audio.volume -= 0.05;
+  currentMusic:   null,
+  currentAmbient: null,
+
+  // Configurações de fade
+  DEFAULT_VOLUME:   0.2,
+  FADE_STEP:        0.02,
+  FADE_INTERVAL_MS: 50,
+
+  fadeOut(audio, onComplete) {
+    clearInterval(audio._fadeInterval);
+    audio._fadeInterval = setInterval(() => {
+      if (audio.volume > this.FADE_STEP) {
+        audio.volume = Math.max(0, audio.volume - this.FADE_STEP);
       } else {
-        clearInterval(fadeInterval);
+        clearInterval(audio._fadeInterval);
         audio.pause();
-        audio.volume = 0.2; // volume final após fade
-        if (callback) callback();
+        audio.volume = this.DEFAULT_VOLUME;
+        onComplete?.();
       }
-    }, 50);
+    }, this.FADE_INTERVAL_MS);
   },
 
   fadeIn(audio) {
+    clearInterval(audio._fadeInterval);
     audio.volume = 0;
-    audio.play().catch(() => {});
-    const fadeInterval = setInterval(() => {
-      if (audio.volume < 0.2) {
-        audio.volume += 0.02;
+    audio.loop = true;
+    audio.play().catch(err => console.warn("audioManager.play()", err));
+    audio._fadeInterval = setInterval(() => {
+      if (audio.volume < this.DEFAULT_VOLUME - this.FADE_STEP) {
+        audio.volume = Math.min(this.DEFAULT_VOLUME, audio.volume + this.FADE_STEP);
       } else {
-        clearInterval(fadeInterval);
-        audio.volume = 0.2;
+        clearInterval(audio._fadeInterval);
+        audio.volume = this.DEFAULT_VOLUME;
       }
-    }, 50);
+    }, this.FADE_INTERVAL_MS);
   },
 
-  playMusic(musicName) {
-    const musicPath = `./audios/musicas/${musicName}.mp3`;
-    if (this.currentMusic === musicName) return;
+  playMusic(name) {
+    if (this.currentMusic === name) return;
+    const path = `./audios/musicas/${name}.mp3`;
+    console.log("[audioManager] playMusic:", name, path);
+
+    const startTrack = () => {
+      this.musicAudio = new Audio(path);
+      this.fadeIn(this.musicAudio);
+      this.currentMusic = name;
+    };
 
     if (!this.musicAudio.paused) {
-      this.fadeOut(this.musicAudio, () => {
-        this.musicAudio = new Audio(musicPath);
-        this.musicAudio.loop = true;
-        this.fadeIn(this.musicAudio);
-      });
+      this.fadeOut(this.musicAudio, startTrack);
     } else {
-      this.musicAudio = new Audio(musicPath);
-      this.musicAudio.loop = true;
-      this.fadeIn(this.musicAudio);
+      startTrack();
     }
-
-    this.currentMusic = musicName;
   },
 
-  playAmbient(ambientName) {
-    const ambientPath = `./audios/ambientes/${ambientName}.mp3`;
-    if (this.currentAmbient === ambientName) return;
+  playAmbient(name) {
+    if (this.currentAmbient === name) return;
+    const path = `./audios/ambientes/${name}.mp3`;
+    console.log("[audioManager] playAmbient:", name, path);
+
+    const startAmbient = () => {
+      this.ambientAudio = new Audio(path);
+      this.fadeIn(this.ambientAudio);
+      this.currentAmbient = name;
+    };
 
     if (!this.ambientAudio.paused) {
-      this.fadeOut(this.ambientAudio, () => {
-        this.ambientAudio = new Audio(ambientPath);
-        this.ambientAudio.loop = true;
-        this.fadeIn(this.ambientAudio);
-      });
+      this.fadeOut(this.ambientAudio, startAmbient);
     } else {
-      this.ambientAudio = new Audio(ambientPath);
-      this.ambientAudio.loop = true;
-      this.fadeIn(this.ambientAudio);
+      startAmbient();
     }
+  },
 
-    this.currentAmbient = ambientName;
+  stopMusic() {
+    if (!this.musicAudio.paused) {
+      this.fadeOut(this.musicAudio);
+    }
+    this.currentMusic = null;
+  },
+
+  stopAmbient() {
+    if (!this.ambientAudio.paused) {
+      this.fadeOut(this.ambientAudio);
+    }
+    this.currentAmbient = null;
   },
 
   playEffect(effectName) {
-  const path = `./audios/efeitos/${effectName}.mp3`;
-
-  if (!this.soundEffects[effectName]) {
-    this.soundEffects[effectName] = new Audio(path);
-    this.soundEffects[effectName].volume = 0.5;
-  }
-
-  const sound = this.soundEffects[effectName];
-
-  // 🔧 Tratamento especial para som da porta do Minecraft
-  if (effectName === "minecraft-porta-sound") {
-    sound.currentTime = 1.65;
-    sound.playbackRate = 1.1;
-  } else {
-    sound.currentTime = 0;
-    sound.playbackRate = 1.0;
-  }
-
-  sound.play().catch(() => {});
-},
-
-  // Função para tocar as músicas das cutscenes finais (Matheus)
-  playFinalMusic(finalType) {
-    this.musicAudio.pause();
-    
-    let musicFile = "";
-    if (finalType === "finalBom") {
-      musicFile = "./audios/musicas/final-bom.mp3";
-    } else if (finalType === "finalRuim") {
-      musicFile = "./audios/musicas/final-ruim.mp3";
-    } else {
-      return; // Se passar tipo errado, não faz nada
+    const path = `./audios/efeitos/${effectName}.mp3`;
+    let fx = this.soundEffects[effectName];
+    if (!fx) {
+      fx = new Audio(path);
+      fx.volume = 0.5;
+      this.soundEffects[effectName] = fx;
     }
-  
-    this.musicAudio = new Audio(musicFile);
-    this.musicAudio.loop = true;
-    this.musicAudio.volume = 0.5;
-    this.musicAudio.play().catch(() => {});
+    fx.currentTime = 0;
+    fx.play().catch(err => console.warn("audioManager.playEffect()", err));
   },
-  
-  stopMusic() {
-    this.musicAudio.pause();
+
+  playFinalMusic(type) {
+    console.log("[audioManager] playFinalMusic:", type);
+    this.stopAmbient();
+    this.stopMusic();
+
+    let file = null;
+    if (type === "finalBom")  file = "final-bom";
+    if (type === "finalRuim") file = "final-ruim";
+    if (!file) return;
+
+    this.musicAudio = new Audio(`./audios/musicas/${file}.mp3`);
+    this.musicAudio.loop = true;
+    this.musicAudio.volume = this.DEFAULT_VOLUME;
+    this.musicAudio.play().catch(err => console.warn("audioManager.playFinalMusic()", err));
     this.currentMusic = null;
   },
 
   setMap(mapName) {
     const mapsWithAudio = {
-      casa: { music: "cidade", ambient: null },
-      trabalho: { music: "cidade", ambient: null },
-      rua: { music: "cidade", ambient: null },
-      shopping: { music: "cidade", ambient: null },
-      shoppingInterno: { music: null, ambient: "shopping" },
-      casinoInterno: { music: "cidade", ambient: null },
+      casa:            { music: "cidade",   ambient: "cidade" },
+      sala:            { music: "cidade",   ambient: null },
+      quarto:          { music: null,       ambient: "quarto" },
+      quartoNoite:     { music: "quarto-noite",       ambient: "quarto-noite" },
+      trabalho:        { music: "cidade",   ambient: null },
+      casino:          { music: "casino",   ambient: null },
+      casinoInterno:   { music: null,       ambient: "casino" },
+      shopping:        { music: "cidade",   ambient: null },
+      shoppingInterno: { music: null,       ambient: "shopping" },
+      rua:             { music: "cidade",   ambient: null },
     };
 
-    const config = mapsWithAudio[mapName];
-    if (!config) return;
-
-    if (config.music) {
-      if (this.currentMusic !== config.music) {
-        this.playMusic(config.music);
-      }
-    } else {
-      if (!this.musicAudio.paused) {
-        this.fadeOut(this.musicAudio);
-      }
-      this.currentMusic = null;
+    const cfg = mapsWithAudio[mapName];
+    if (!cfg) {
+      console.warn(`[audioManager] sem definição para mapa '${mapName}'`);
+      return;
     }
 
-    if (config.ambient) {
-      if (this.currentAmbient !== config.ambient) {
-        this.playAmbient(config.ambient);
-      }
+    console.log(`[audioManager] setMap('${mapName}') →`, cfg);
+
+    // Música
+    if (cfg.music) {
+      this.playMusic(cfg.music);
     } else {
-      if (!this.ambientAudio.paused) {
-        this.fadeOut(this.ambientAudio);
-      }
-      this.currentAmbient = null;
+      this.stopMusic();
     }
 
-    console.log("Trocando para:", mapName);
-    console.log("Esperado:", config);
+    // Ambiência
+    if (cfg.ambient) {
+      this.playAmbient(cfg.ambient);
+    } else {
+      this.stopAmbient();
+    }
   }
 };
