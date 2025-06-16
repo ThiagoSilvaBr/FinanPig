@@ -100,7 +100,7 @@ export const audioManager = {
       fx.volume = 0.5;
       this.soundEffects[effectName] = fx;
     }
-    fx.currentTime = 0;
+    fx.currentTime = 1.68; // delay para começar o som da porta (tempo vazio do áudio)
     fx.play().catch(err => console.warn("audioManager.playEffect()", err));
   },
 
@@ -123,16 +123,15 @@ export const audioManager = {
 
   setMap(mapName) {
     const mapsWithAudio = {
-      casa:            { music: "cidade",   ambient: "cidade" },
-      sala:            { music: "cidade",   ambient: null },
+      casa:            { music: "cidade",   ambient: null },
+      sala:            { music: null,       ambient: "quarto" },
       quarto:          { music: null,       ambient: "quarto" },
       quartoNoite:     { music: "quarto-noite",       ambient: "quarto-noite" },
       trabalho:        { music: "cidade",   ambient: null },
-      casino:          { music: "casino",   ambient: null },
-      casinoInterno:   { music: null,       ambient: "casino" },
+      casino:          { music: "cidade",   ambient: null },
+      casinoInterno:   { music: "casino",   ambient: null },
       shopping:        { music: "cidade",   ambient: null },
       shoppingInterno: { music: null,       ambient: "shopping" },
-      rua:             { music: "cidade",   ambient: null },
     };
 
     const cfg = mapsWithAudio[mapName];

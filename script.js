@@ -5,8 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const screen = document.getElementById("startScreen");
   const backToMenuButton = document.getElementById("backToMenu");
 
-
-
   class CutscenePlayer {
     constructor(containerId, imageId, textId, fadeOverlayId, skipButtonId) {
       this.container = document.getElementById(containerId);
@@ -25,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
       this.skipButton.addEventListener("click", () => this.skipCutscene());
     }
 
-    play(scenes, onComplete = () => {}, skippable = true, tempoPadrao = 3000) {
+    play(scenes, onComplete = () => {}, skippable = true, tempoPadrao = 7000) {
       this.scenes = scenes;
       this.onComplete = onComplete;
       this.index = 0;
@@ -108,13 +106,11 @@ document.addEventListener("DOMContentLoaded", function () {
     "skipCutscene"
   );
 
-
-
   //botão de iniciar o jogo
   document.getElementById("startButton").addEventListener("click", () => {
     cutscenePlayer.play(cutscenes.iniciais, () => {
       startGame();
-      audioManager.setMap(currentMap); // ✅ CORRETO
+      audioManager.setMap(currentMap);
     });
 
     screen.classList.add("fade-out");
@@ -273,7 +269,7 @@ const pig = {
   y: 0,
   width: 200,
   height: 200,
-  speed: 6,
+  speed: 15,
   velocityY: 0,
   isJumping: false,
   direction: "right",
@@ -753,7 +749,7 @@ function triggerFinalCutscene() {
 
     // 👉 Volta pro menu inicial
     voltarAoMenuInicial();
-  }, false, 5000); // Cutscene final não pode pular
+  }, false, 8000); // Cutscene final não pode pular
 }
 
 
@@ -866,6 +862,7 @@ document.addEventListener("keydown", (e) => {
       dialogManager.hide();
       setTimeout(() => {
         currentMap = "quarto";
+        audioManager.setMap(currentMap);
         loadMap("mapa-quarto");
         assets.background.onload = () => {
           resizeCanvas();
@@ -878,11 +875,11 @@ document.addEventListener("keydown", (e) => {
 
     if (currentMap === "casa" && currentDay === 5 && nearBoss) {
       // Impede falar com o lobo se não comprou mantimentos
-      if (!itemDeliveredToday) {
+      if (!itemBoughtToday || !itemDeliveredToday) {
         dialogManager.show(
           "bossBlocked",
           "Você não pode fazer isso ainda!",
-          "Sua mãe precisa de ajuda!\nCompre os mantimentos antes de\nfalar com o lobo\n\nPressione 'ESC' para sair"
+          "Sua mãe precisa de ajuda!\nCompre e entregue os mantimentos\n antes de falar com o lobo\n\nPressione 'ESC' para sair"
         );
         return;
       }
@@ -954,6 +951,7 @@ document.addEventListener("keydown", (e) => {
       if (dialogManager.active && dialogManager.type === "door") {
         audioManager.playEffect("minecraft-porta-sound");
         currentMap = "sala";
+        audioManager.setMap(currentMap);
         loadMap("mapa-sala");
         resizeCanvas();
 
@@ -1064,6 +1062,7 @@ document.addEventListener("keydown", (e) => {
         };
 
         currentMap = "quartoNoite";
+        audioManager.setMap(currentMap);
         loadMap("mapa-quarto-noite");
       } else {
         dialogManager.show(
@@ -1197,6 +1196,7 @@ document.addEventListener("keydown", (e) => {
       if (dialogManager.active && dialogManager.type === "casinoDoor") {
         audioManager.playEffect("minecraft-porta-sound");
         currentMap = "casinoInterno";
+        audioManager.setMap(currentMap);
         loadMap("mapa-cassino-interno");
         resizeCanvas();
         pig.x = canvas.width / 2 - pig.width / 2;
@@ -1223,8 +1223,9 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (currentMap === "casinoInterno" && nearCasinoExit) {
-      audioManager.playEffect("minecraft-porta-sound");
+      audioManager.playEffect("minecraft-porta-sound");  
       currentMap = "casino";
+      audioManager.setMap(currentMap);
       loadMap("mapa-cassino");
       resizeCanvas();
       pig.x = canvas.width / 2 - pig.width / 2;
@@ -1297,6 +1298,7 @@ document.addEventListener("keydown", (e) => {
     if (currentMap === "sala" && nearRoomExit) {
       audioManager.playEffect("minecraft-porta-sound");
       currentMap = "casa";
+      audioManager.setMap(currentMap);
       loadMap("mapa-casa");
       resizeCanvas();
       pig.x = canvas.width / 2 - pig.width / 2;
@@ -1355,6 +1357,7 @@ function update() {
 
   // Carregar o mapa especial para o último dia
   if (currentMap === "casa" && currentDay === 5 && !nearBoss) {
+    audioManager.setMap("casa");
     loadMap("mapa-casa-final");
     resizeCanvas();
   }
