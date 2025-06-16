@@ -544,7 +544,7 @@ const dialogManager = {
       });
     }
 
-    // Jogabilidade da Slot Machine do cassino
+    // Renderizando os ícones da Slot Machine do cassino
     if (showSlotResults && currentSlotResults.length === 3) {
       const iconSize = 120;
       const spacing = 40;
@@ -667,8 +667,8 @@ const momRequests = {
   5: { item: "Mantimentos", type: "rightShop" },
 };
 
-
 let itemDeliveredToday = false;
+let itemBoughtToday = false;
 
 // Função para evitar bug de não conseguir entrar mais de uma vez nos mapas internos, dentre outros bugs
 function resetInteractionFlags() {
@@ -926,7 +926,7 @@ document.addEventListener("keydown", (e) => {
           updateDayDisplay();
 
           if (momRequests[currentDay].type === "lemonade") {
-            itemDeliveredToday = true;
+            itemBoughtToday = true;
           }
           showItemIcon("Limonada");
 
@@ -973,30 +973,33 @@ document.addEventListener("keydown", (e) => {
 
     // Ver o que a mãe do personagem precisa em cada dia
    if (currentMap === "sala" && nearMom) {
-  if (dialogManager.active && dialogManager.type === "momHint") {
-    dialogManager.hide();
+    if (dialogManager.active && dialogManager.type === "momHint") {
+      dialogManager.hide();
 
-    const request = momRequests[currentDay];
-    if (itemDeliveredToday) {
-      // 👇 Remove o item do inventário visual
-      hideItemIcon(request.item);
+      const request = momRequests[currentDay];
+      if (itemBoughtToday && !itemDeliveredToday) {
+        // Realiza a entrega do item ao interagir com a mãe
+        itemDeliveredToday = true;
+        
+        // 👇 Remove o item do inventário visual
+        hideItemIcon(request.item);
 
-      dialogManager.show(
-        "momThanks",
-        "Mamãe",
-        "Muito obrigada por comprar\n o que eu pedi meu filho! ❤"
-      );
-    } else {
-      dialogManager.show(
-        "momRequest",
-        "Mamãe",
-        `Filho, você pode comprar\n ${request.item} para mim,\n por favor?`
-      );
+        dialogManager.show(
+          "momThanks",
+          "Mamãe",
+          "Muito obrigada por comprar\n o que eu pedi meu filho! ❤"
+        );
+      } else {
+        dialogManager.show(
+          "momRequest",
+          "Mamãe",
+          `Filho, você pode comprar\n ${request.item} para mim,\n por favor?`
+        );
+      }
+    } else if (dialogManager.type === "momRequest" && !itemDeliveredToday) {
+      dialogManager.hide();
     }
-  } else if (dialogManager.type === "momRequest" && !itemDeliveredToday) {
-    dialogManager.hide();
   }
-}
 
 
     if (currentMap === "quarto" && nearBed) {
@@ -1011,11 +1014,20 @@ document.addEventListener("keydown", (e) => {
       }
 
       // Impede o personagem dormir sem comprar o que a mãe precisa
-      if (!itemDeliveredToday) {
+      if (!itemBoughtToday) {
         dialogManager.show(
           "momNeedsItem",
           "Mamãe ainda precisa da sua ajuda!",
           "Compre o item que ela pediu\n antes de dormir."
+        );
+        return;
+      }
+
+      if (itemBoughtToday && !itemDeliveredToday) {
+        dialogManager.show(
+          "momWaitingItem",
+          "Mamãe ainda está esperando!",
+          "Você comprou o item, mas\nainda não entregou para ela.\nVá até a sala e fale com ela."
         );
         return;
       }
@@ -1121,7 +1133,7 @@ document.addEventListener("keydown", (e) => {
           updateMoneyDisplay();
 
           if (momRequests[currentDay].type === "leftShop") {
-            itemDeliveredToday = true;
+            itemBoughtToday = true;
           }
           showItemIcon("Itens de Higiene");
 
@@ -1155,7 +1167,7 @@ document.addEventListener("keydown", (e) => {
           updateMoneyDisplay();
 
           if (momRequests[currentDay].type === "rightShop") {
-            itemDeliveredToday = true;
+            itemBoughtToday = true;
           }
           showItemIcon("Mantimentos");
 
@@ -1223,9 +1235,9 @@ document.addEventListener("keydown", (e) => {
     // Interação com as máquinas do cassino
     if (currentMap === "casinoInterno" && nearSlotMachine) {
       if (dialogManager.active && dialogManager.type === "slotMachine") {
-        if (playerMoney >= 30) {
-          playerMoney -= 30;
-          moneySpentToday += 30;
+        if (playerMoney >= 15) {
+          playerMoney -= 15;
+          moneySpentToday += 15;
           updateMoneyDisplay();
 
           slotIsSpining = true;
@@ -1266,13 +1278,13 @@ document.addEventListener("keydown", (e) => {
           dialogManager.show(
             "slotNoMoney",
             "Dinheiro insuficiente!",
-            "Você precisa de R$ 30,00\n para jogar."
+            "Você precisa de R$ 15,00\n para jogar."
           );
         }
       } else {
         dialogManager.show(
           "slotMachine",
-          "Jogar na caça-níquel por R$ 30,00?",
+          "Jogar na caça-níquel por R$ 15,00?",
           "Pressione 'E' para confirmar\nPressione 'ESC' para cancelar"
         );
         interactedWithSlotMachine = true;
@@ -1560,7 +1572,8 @@ function update() {
       dialogManager.type === "bed" ||
       dialogManager.type === "bedHint" ||
       dialogManager.type === "noSleepFinalDay" ||
-      dialogManager.type === "momNeedsItem"
+      dialogManager.type === "momNeedsItem" ||
+      dialogManager.type === "momWaitingItem"
     ) {
       dialogManager.hide();
     }
@@ -1783,6 +1796,7 @@ function resetGameVariables() {
   moneyEarnedToday = 0;
   currentDay = 1;
   itemDeliveredToday = false;
+  itemBoughtToday = false;
   bossDialogStep = 0;
   talkedToBoss = false;
 
@@ -1793,8 +1807,10 @@ function resetGameVariables() {
   pig.x = canvas.width * 0.8;
   pig.y = sidewalkY;
 
+  // Reseta dinheiro, dia e inventário
   updateMoneyDisplay();
   updateDayDisplay();
+  clearInventoryIcons();
 }
 
 
