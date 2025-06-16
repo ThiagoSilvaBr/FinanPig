@@ -285,7 +285,7 @@ const gravity = 0.5;
 const jumpForce = -12;
 let sidewalkY = 0;
 
-let currentMap = "casa";
+let currentMap = "quarto";
 let canSwitchMap = true;
 
 const maps = {
@@ -1694,25 +1694,6 @@ function draw() {
 
   // Desenha diálogo gerenciado pelo dialogManager
   dialogManager.draw(ctx, canvas);
-
-  // Estilo do HUD (interface gráfica)
-  const layoutWidth = 250;
-  const layoutHeight = 80;
-  const padding = 10;
-
-  ctx.fillStyle = "rgba(101, 157, 90, 0.9)";
-  drawRoundedRect(padding, padding, layoutWidth, layoutHeight, 10);
-  ctx.fill();
-
-  ctx.strokeStyle = "rgb(80, 130, 70)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = "white";
-  ctx.font = "16px sans-serif";
-  ctx.fillText(`Mapa: ${currentMap}`, padding + 10, padding + 25);
-  ctx.fillText(`X: ${Math.round(pig.x)}`, padding + 10, padding + 45);
-  ctx.fillText(`Y: ${Math.round(pig.y)}`, padding + 10, padding + 65);
 }
 
 const slotIcons = {
@@ -1740,8 +1721,8 @@ function checkAllLoaded() {
   assetsLoaded++;
   if (assetsLoaded === 2) {
     resizeCanvas();
-    // Pig spawna na frente de casa
-    pig.x = (canvas.width - pig.width) / 2;
+    // Pig spawna à direita da sala
+    pig.x = canvas.width * 0.8;
     pig.y = sidewalkY;
     gameLoop();
   }
@@ -1806,10 +1787,10 @@ function resetGameVariables() {
   talkedToBoss = false;
 
   // Reseta posicionamento e mapa
-  currentMap = "casa";
-  loadMap("mapa-casa");
+  currentMap = "quarto";
+  loadMap("mapa-quarto");
   resizeCanvas();
-  pig.x = (canvas.width - pig.width) / 2;
+  pig.x = canvas.width * 0.8;
   pig.y = sidewalkY;
 
   updateMoneyDisplay();
@@ -1820,7 +1801,7 @@ function resetGameVariables() {
 assets.background.onload = checkAllLoaded;
 assets.pigIdle.onload = checkAllLoaded;
 
-loadMap("mapa-casa");
+loadMap("mapa-quarto");
 
 window.addEventListener("resize", resizeCanvas);
 
@@ -1859,5 +1840,3 @@ function clearInventoryIcons() {
   document.getElementById("icon-higiene").style.display = "none";
   document.getElementById("icon-mantimentos").style.display = "none";
 }
-
-
